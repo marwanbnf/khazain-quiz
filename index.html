@@ -1111,12 +1111,12 @@ body::after{
 .sync-status.warn{color:var(--red)}
 .sync-status:not(:disabled){cursor:pointer;text-decoration:underline}
 #syncModal .sync-modal{max-width:560px}
-.sync-note{color:#756151;font-size:14px;line-height:1.7;text-align:center;margin-bottom:14px}
 .sync-steps{margin:0 22px 14px 0;color:var(--ink);font-size:14px;line-height:1.9}
 .sync-steps a{color:var(--walnut);font-weight:800}
-.sync-label{display:block;margin:10px 0 5px;color:var(--walnut-dark);font-size:13px;font-weight:800}
-.sync-input{width:100%;padding:11px 12px;border:1px solid #bda88f;border-radius:9px;background:#fffaf3;color:var(--ink);font-size:15px}
-.sync-link{display:block;margin:12px auto 0;border:0;background:none;color:var(--walnut);font-size:12px;font-weight:700;text-decoration:underline;cursor:pointer}
+.publish-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.publish-actions .btn{flex:1;min-width:150px;padding:13px 18px;font-size:15px;text-align:center;text-decoration:none}
+.publish-text{display:none;width:100%;height:90px;margin-top:10px;padding:8px;border:1px solid #bda88f;border-radius:9px;background:#fffaf3;color:var(--ink);font:12px monospace}
+.publish-text.show{display:block}
 .sync-error{min-height:20px;margin-top:10px;color:var(--red);font-size:13px;font-weight:800;text-align:center}
 .sync-toast{
   position:fixed;z-index:300;bottom:22px;left:50%;transform:translate(-50%,20px);
@@ -1134,7 +1134,7 @@ body::after{
     <span class="brand-kicker">لعبة جماعية</span>
     <h1>تحدّي الصناديق</h1>
     <span class="brand-meta" id="gameMeta">30 صندوقاً جاهزاً</span>
-    <button type="button" class="sync-status" id="syncStatus" disabled onclick="unlockFromStatus()">جارٍ تحميل آخر نسخة…</button>
+    <button type="button" class="sync-status" id="syncStatus" disabled onclick="openPublish()">جارٍ تحميل آخر نسخة…</button>
   </div>
   <div class="teams" id="teamsBar"></div>
   <div class="center-panel">
@@ -1221,35 +1221,25 @@ body::after{
   </div>
 </div>
 
-<!-- Shared-save unlock / first-time setup -->
+<!-- Publish to every device through GitHub's own editor -->
 <div class="overlay" id="syncModal">
   <div class="modal sync-modal">
-    <div id="syncUnlock">
-      <h2>🔒 كلمة مرور الحفظ</h2>
-      <p class="sync-note">أدخل كلمة المرور مرة واحدة على هذا الجهاز ليصل تعديلك إلى كل الأجهزة.</p>
-      <label class="sync-label" for="syncPassword">كلمة المرور</label>
-      <input class="sync-input" id="syncPassword" type="password" autocomplete="current-password">
-      <button type="button" class="sync-link" onclick="showSyncSetup()">نسيت كلمة المرور أو انتهت صلاحية الرمز؟ إعداد من جديد</button>
+    <h2>☁ نشر التعديل لكل الأجهزة</h2>
+    <ol class="sync-steps">
+      <li>اضغط <b>نسخ البيانات</b>.</li>
+      <li>اضغط <b>فتح GitHub</b> (يلزم أن تكون مسجّل الدخول بحسابك).</li>
+      <li>اضغط داخل مربع النص، ثم حدّد الكل (Ctrl+A) والصق (Ctrl+V).</li>
+      <li>اضغط <b>Commit changes</b> ثم أكّد بنفس الزر، وارجع إلى هنا.</li>
+    </ol>
+    <div class="publish-actions">
+      <button type="button" class="btn gold" id="publishCopy" onclick="copyPublishText()">نسخ البيانات</button>
+      <a class="btn" id="publishOpen" target="_blank" rel="noopener">فتح GitHub</a>
     </div>
-    <div id="syncSetup">
-      <h2>🔐 إعداد الحفظ لكل الأجهزة</h2>
-      <p class="sync-note">يتم هذا الإعداد مرة واحدة فقط، وبعده تكفي كلمة المرور على أي جهاز.</p>
-      <ol class="sync-steps">
-        <li><a id="syncTokenLink" target="_blank" rel="noopener">افتح صفحة إنشاء الرمز في GitHub</a></li>
-        <li>في Repository access اختر <b>Only select repositories</b> ثم <b>khazain-quiz</b> فقط.</li>
-        <li>اضغط <b>Generate token</b> ثم انسخ الرمز والصقه هنا.</li>
-      </ol>
-      <label class="sync-label" for="syncToken">الرمز</label>
-      <input class="sync-input" id="syncToken" type="password" dir="ltr" autocomplete="off" placeholder="github_pat_...">
-      <label class="sync-label" for="syncNewPassword">اختر كلمة مرور (10 أحرف على الأقل)</label>
-      <input class="sync-input" id="syncNewPassword" type="password" autocomplete="new-password">
-      <label class="sync-label" for="syncNewPassword2">أعد كتابة كلمة المرور</label>
-      <input class="sync-input" id="syncNewPassword2" type="password" autocomplete="new-password">
-    </div>
+    <textarea class="publish-text" id="publishText" dir="ltr" readonly aria-label="بيانات المسابقة للنسخ"></textarea>
     <div class="sync-error" id="syncError" role="alert"></div>
-    <div class="modal-actions" style="margin-top:16px">
-      <button class="btn success" id="syncSubmit" onclick="submitSyncDialog()">متابعة</button>
-      <button class="btn danger" onclick="closeSyncDialog(false)">إلغاء</button>
+    <div class="modal-actions" style="margin-top:12px">
+      <button class="btn success" id="publishCheck" onclick="checkPublished(true)">تحقّق من النشر</button>
+      <button class="btn danger" onclick="closePublish()">لاحقاً</button>
     </div>
   </div>
 </div>
@@ -1312,22 +1302,17 @@ let state={
   closeOnWrong:false,
   boxes:[]
 };
-const SYNC={owner:'marwanbnf',repo:'khazain-quiz',branch:'game-data',stateFile:'state.json',authFile:'auth.json'};
+const SYNC={owner:'marwanbnf',repo:'khazain-quiz',branch:'game-data',file:'state.json'};
 const CACHE_KEY='khazainQuiz.cacheV2';
-const TOKEN_KEY='khazainQuiz.token';
-const TOKEN_URL='https://github.com/settings/personal-access-tokens/new?name=khazain-quiz&target_name=marwanbnf&expires_in=366&contents=write';
-const PBKDF2_ITERATIONS=600000;
+const API_URL=`https://api.github.com/repos/${SYNC.owner}/${SYNC.repo}/contents/${SYNC.file}?ref=${SYNC.branch}`;
+const RAW_URL=`https://raw.githubusercontent.com/${SYNC.owner}/${SYNC.repo}/${SYNC.branch}/${SYNC.file}`;
+const EDIT_URL=`https://github.com/${SYNC.owner}/${SYNC.repo}/edit/${SYNC.branch}/${SYNC.file}`;
 let remoteSha=null;
 let lastSyncedJson=null;
-let syncTimer=null;
-let syncBusy=false;
-let syncAgain=false;
 let settingsSnapshot=null;
 let lastRefresh=0;
-let syncDialogResolve=null;
-let syncDialogMode='unlock';
-let syncAuthSha=null;
-let syncAuthRecord=null;
+let lastPublishCheck=0;
+let loadFailed=false;
 let pendingChoice=null;
 let currentBoxIdx=null;
 let choiceLocked=false;
@@ -1413,67 +1398,39 @@ function adoptState(obj){
   resizeBoxes(state.boxCount);
 }
 
-function storageGet(key){try{return localStorage.getItem(key)}catch(e){return null}}
-function storageSet(key,value){try{localStorage.setItem(key,value)}catch(e){}}
-function storageRemove(key){try{localStorage.removeItem(key)}catch(e){}}
-function getToken(){return storageGet(TOKEN_KEY)}
-function writeCache(){storageSet(CACHE_KEY,JSON.stringify({baseSha:remoteSha,state}))}
+function writeCache(){
+  try{localStorage.setItem(CACHE_KEY,JSON.stringify({baseSha:remoteSha,state}))}catch(e){}
+}
 function readCache(){
-  try{return JSON.parse(storageGet(CACHE_KEY))}catch(e){return null}
+  try{return JSON.parse(localStorage.getItem(CACHE_KEY))}catch(e){return null}
 }
 
-function bytesToBase64(bytes){
-  let binary='';
-  for(let i=0;i<bytes.length;i+=8192)binary+=String.fromCharCode(...bytes.subarray(i,i+8192));
-  return btoa(binary);
-}
-function base64ToBytes(text){
-  return Uint8Array.from(atob(text.replace(/\s/g,'')),c=>c.charCodeAt(0));
-}
-
-function contentsUrl(file){
-  return `https://api.github.com/repos/${SYNC.owner}/${SYNC.repo}/contents/${file}`;
-}
-async function ghGetFile(file){
-  const url=`${contentsUrl(file)}?ref=${SYNC.branch}&t=${Date.now()}`;
-  const request=headers=>fetch(url,{headers,cache:'no-store',signal:AbortSignal.timeout(10000)});
-  const headers={Accept:'application/vnd.github+json'};
-  const token=getToken();
-  if(token)headers.Authorization='Bearer '+token;
-  let res=await request(headers);
-  if(res.status===401&&token){
-    storageRemove(TOKEN_KEY);
-    res=await request({Accept:'application/vnd.github+json'});
+/* The API is always current but rate limited; the raw file has no such limit but may lag a few minutes. */
+async function fetchRemote(){
+  const options={cache:'no-store',signal:AbortSignal.timeout(10000)};
+  try{
+    const res=await fetch(`${API_URL}&t=${Date.now()}`,{...options,headers:{Accept:'application/vnd.github+json'}});
+    if(!res.ok)throw new Error('GitHub read failed: '+res.status);
+    const data=await res.json();
+    const bytes=Uint8Array.from(atob(data.content.replace(/\s/g,'')),c=>c.charCodeAt(0));
+    return {sha:data.sha,text:new TextDecoder().decode(bytes)};
+  }catch(e){
+    const res=await fetch(RAW_URL,options);
+    if(!res.ok)throw new Error('GitHub raw read failed: '+res.status);
+    return {sha:null,text:await res.text()};
   }
-  if(res.status===404)return null;
-  if(!res.ok)throw new Error('GitHub read failed: '+res.status);
-  const data=await res.json();
-  return {sha:data.sha,text:new TextDecoder().decode(base64ToBytes(data.content))};
-}
-function ghPutFile(file,text,sha,message,token){
-  const body={message,branch:SYNC.branch,content:bytesToBase64(new TextEncoder().encode(text))};
-  if(sha)body.sha=sha;
-  return fetch(contentsUrl(file),{
-    method:'PUT',
-    headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+token,'Content-Type':'application/json'},
-    body:JSON.stringify(body),
-    signal:AbortSignal.timeout(15000)
-  });
 }
 
 function setSyncStatus(kind){
   const el=document.getElementById('syncStatus');
   if(!el)return;
   const labels={
-    loading:'جارٍ تحميل آخر نسخة…',
-    synced:'☁ آخر نسخة محفوظة لكل الأجهزة',
-    saving:'جارٍ الحفظ لكل الأجهزة…',
-    local:'🔒 هذا اللعب على هذا الجهاز فقط — اضغط للحفظ لكل الأجهزة',
-    error:'⚠ تعذّر الحفظ، ستُعاد المحاولة تلقائياً',
-    offline:'⚠ لا يوجد اتصال — هذه آخر نسخة على هذا الجهاز'
+    synced:'☁ هذه آخر نسخة منشورة لكل الأجهزة',
+    local:'📝 تغييرات على هذا الجهاز فقط — اضغط لنشرها',
+    offline:'⚠ تعذّر جلب آخر نسخة — هذه آخر نسخة على هذا الجهاز'
   };
   el.textContent=labels[kind];
-  el.classList.toggle('warn',kind==='local'||kind==='error'||kind==='offline');
+  el.classList.toggle('warn',kind!=='synced');
   el.disabled=kind!=='local';
 }
 function showToast(message){
@@ -1490,18 +1447,13 @@ function applyRemote(remote){
   lastSyncedJson=JSON.stringify(state);
 }
 
-let loadFailed=false;
 async function load(){
   const cached=readCache();
   try{
-    const remote=await ghGetFile(SYNC.stateFile);
-    if(remote){
-      applyRemote(remote);
-      // Unpublished play on this device survives only while it is based on the latest published version.
-      if(cached&&cached.baseSha===remote.sha&&cached.state)adoptState(cached.state);
-      return;
-    }
-    adoptState(cached&&cached.state);
+    const remote=await fetchRemote();
+    applyRemote(remote);
+    // Unpublished changes on this device survive only while they are based on the latest published version.
+    if(remote.sha&&cached&&cached.baseSha===remote.sha&&cached.state)adoptState(cached.state);
   }catch(e){
     loadFailed=true;
     adoptState(cached&&cached.state);
@@ -1509,228 +1461,91 @@ async function load(){
   }
 }
 
+function hasUnpublished(){return JSON.stringify(state)!==lastSyncedJson}
+
 function save(){
   writeCache();
-  const json=JSON.stringify(state);
-  if(json===lastSyncedJson){
-    if(!syncBusy)setSyncStatus('synced');
-    return;
-  }
-  if(loadFailed){
-    setSyncStatus('offline');
-    return;
-  }
-  if(!getToken()){
-    setSyncStatus('local');
-    return;
-  }
-  setSyncStatus('saving');
-  clearTimeout(syncTimer);
-  syncTimer=setTimeout(pushState,700);
+  if(loadFailed)setSyncStatus('offline');
+  else setSyncStatus(hasUnpublished()?'local':'synced');
 }
 
-async function pushState(){
-  clearTimeout(syncTimer);
-  if(settingsSnapshot!==null){
-    syncTimer=setTimeout(pushState,2000);
-    return false;
-  }
-  if(syncBusy){
-    syncAgain=true;
-    return false;
-  }
-  const token=getToken();
-  if(!token){
-    setSyncStatus('local');
-    return false;
-  }
-  const json=JSON.stringify(state);
-  if(json===lastSyncedJson){
-    setSyncStatus('synced');
-    return true;
-  }
-  syncBusy=true;
-  setSyncStatus('saving');
-  let saved=false;
-  try{
-    const res=await ghPutFile(SYNC.stateFile,json,remoteSha,'تحديث بيانات المسابقة',token);
-    if(res.ok){
-      const data=await res.json();
-      remoteSha=data.content.sha;
-      lastSyncedJson=json;
-      loadFailed=false;
-      writeCache();
-      saved=true;
-      setSyncStatus('synced');
-    }else if(res.status===409||res.status===422){
-      // Another device published first: never overwrite its newer edits with this older copy.
-      const remote=await ghGetFile(SYNC.stateFile);
-      if(!remote)throw new Error('Published state is missing');
-      applyRemote(remote);
-      loadFailed=false;
-      render();
-      showToast('عدّل جهاز آخر المسابقة قبلك، فتم تحميل أحدث نسخة. أعد تعديلك إن لزم.');
-    }else if(res.status===401||res.status===403||res.status===404){
-      storageRemove(TOKEN_KEY);
-      setSyncStatus('local');
-      showToast('رمز الحفظ غير صالح أو منتهي. اضغط على حالة الحفظ لإعادة الإعداد.');
-    }else{
-      throw new Error('GitHub write failed: '+res.status);
-    }
-  }catch(e){
-    setSyncStatus('error');
-    syncTimer=setTimeout(pushState,15000);
-  }
-  syncBusy=false;
-  if(syncAgain){
-    syncAgain=false;
-    return pushState();
-  }
-  return saved;
-}
-
-/* Picks up edits made on another device, without interrupting an open dialog or an unsaved change. */
+/* Picks up edits published from another device, without interrupting an open dialog or unpublished play. */
 async function refreshFromRemote(force=false){
   const now=Date.now();
   if(!force&&now-lastRefresh<30000)return;
-  const busy=()=>document.querySelector('.overlay.show')||pendingChoice||syncBusy;
-  if(busy())return;
-  if(getToken()&&JSON.stringify(state)!==lastSyncedJson)return;
+  const busy=()=>document.querySelector('.overlay.show')||pendingChoice;
+  if(busy()||(!force&&hasUnpublished()&&!loadFailed))return;
   lastRefresh=now;
   try{
-    const remote=await ghGetFile(SYNC.stateFile);
-    if(!remote||busy())return;
+    const remote=await fetchRemote();
+    if(busy()||!remote.sha)return;
     loadFailed=false;
-    if(remote.sha===remoteSha&&lastSyncedJson!==null)return;
+    if(remote.sha===remoteSha&&lastSyncedJson!==null){
+      save();
+      return;
+    }
     applyRemote(remote);
     render();
-    showToast('تم تحميل آخر التعديلات.');
+    showToast('تم تحميل آخر التعديلات المنشورة.');
   }catch(e){}
 }
 
-async function deriveSyncKey(password,salt,iterations){
-  const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveKey']);
-  return crypto.subtle.deriveKey(
-    {name:'PBKDF2',salt,iterations,hash:'SHA-256'},
-    base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']
-  );
-}
-async function encryptToken(token,password){
-  const salt=crypto.getRandomValues(new Uint8Array(16));
-  const iv=crypto.getRandomValues(new Uint8Array(12));
-  const key=await deriveSyncKey(password,salt,PBKDF2_ITERATIONS);
-  const data=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(token));
-  return {iterations:PBKDF2_ITERATIONS,salt:bytesToBase64(salt),iv:bytesToBase64(iv),data:bytesToBase64(new Uint8Array(data))};
-}
-async function decryptToken(record,password){
-  const key=await deriveSyncKey(password,base64ToBytes(record.salt),record.iterations);
-  const data=await crypto.subtle.decrypt({name:'AES-GCM',iv:base64ToBytes(record.iv)},key,base64ToBytes(record.data));
-  return new TextDecoder().decode(data);
-}
-
-function ensureToken(){
-  if(getToken())return Promise.resolve(true);
-  return openSyncDialog();
-}
-async function openSyncDialog(){
-  try{
-    const auth=await ghGetFile(SYNC.authFile);
-    syncAuthSha=auth?auth.sha:null;
-    syncAuthRecord=auth?JSON.parse(auth.text):null;
-  }catch(e){
-    showToast('تعذّر الاتصال بـ GitHub. تأكد من الإنترنت ثم حاول مجدداً.');
-    return false;
-  }
-  syncAuthRecord?showSyncUnlock():showSyncSetup();
-  document.getElementById('syncModal').classList.add('show');
-  return new Promise(resolve=>{syncDialogResolve=resolve});
-}
-function resetSyncDialog(mode){
-  syncDialogMode=mode;
-  document.getElementById('syncUnlock').style.display=mode==='unlock'?'block':'none';
-  document.getElementById('syncSetup').style.display=mode==='setup'?'block':'none';
+function openPublish(){
+  const textEl=document.getElementById('publishText');
+  textEl.value=JSON.stringify(state,null,2);
+  textEl.classList.remove('show');
+  document.getElementById('publishOpen').href=EDIT_URL;
+  document.getElementById('publishCopy').textContent='نسخ البيانات';
   document.getElementById('syncError').textContent='';
+  document.getElementById('syncModal').classList.add('show');
 }
-function showSyncUnlock(){
-  resetSyncDialog('unlock');
-  document.getElementById('syncPassword').value='';
-  document.getElementById('syncSubmit').textContent='متابعة';
-  setTimeout(()=>document.getElementById('syncPassword').focus(),50);
-}
-function showSyncSetup(){
-  resetSyncDialog('setup');
-  document.getElementById('syncTokenLink').href=TOKEN_URL;
-  document.getElementById('syncSubmit').textContent='حفظ الإعداد';
-}
-function closeSyncDialog(result){
+function closePublish(){
   document.getElementById('syncModal').classList.remove('show');
-  ['syncPassword','syncToken','syncNewPassword','syncNewPassword2'].forEach(id=>{document.getElementById(id).value=''});
-  if(syncDialogResolve)syncDialogResolve(result);
-  syncDialogResolve=null;
+  save();
 }
-async function submitSyncDialog(){
-  const button=document.getElementById('syncSubmit');
-  const errorEl=document.getElementById('syncError');
-  if(button.disabled)return;
-  errorEl.textContent='';
-  button.disabled=true;
+async function copyPublishText(){
+  const textEl=document.getElementById('publishText');
+  const button=document.getElementById('publishCopy');
   try{
-    if(syncDialogMode==='unlock')await submitSyncUnlock(errorEl);
-    else await submitSyncSetup(errorEl);
+    await navigator.clipboard.writeText(textEl.value);
+    button.textContent='تم النسخ ✓';
   }catch(e){
-    errorEl.textContent='تعذّر الاتصال بـ GitHub. تأكد من الإنترنت ثم حاول مجدداً.';
+    textEl.classList.add('show');
+    textEl.focus();
+    textEl.select();
+    button.textContent='انسخ النص المحدد أدناه';
+  }
+}
+async function checkPublished(manual){
+  const errorEl=document.getElementById('syncError');
+  const button=document.getElementById('publishCheck');
+  if(button.disabled)return;
+  lastPublishCheck=Date.now();
+  button.disabled=true;
+  if(manual)errorEl.textContent='';
+  try{
+    const remote=await fetchRemote();
+    const local=JSON.stringify(state);
+    if(JSON.stringify(JSON.parse(remote.text))===local){
+      remoteSha=remote.sha;
+      lastSyncedJson=local;
+      closePublish();
+      showToast('تم النشر، وسيظهر التعديل على كل الأجهزة.');
+    }else if(manual){
+      errorEl.textContent='لم يصل التعديل بعد. تأكد من الضغط على Commit changes ثم حاول بعد ثوانٍ.';
+    }
+  }catch(e){
+    if(manual)errorEl.textContent='تعذّر التحقق. تأكد من الإنترنت ومن لصق البيانات كاملة ثم حاول مجدداً.';
   }finally{
     button.disabled=false;
   }
 }
-async function submitSyncUnlock(errorEl){
-  let token;
-  try{
-    token=await decryptToken(syncAuthRecord,document.getElementById('syncPassword').value);
-  }catch(e){
-    errorEl.textContent='كلمة المرور غير صحيحة.';
+function onPageReturn(){
+  if(document.getElementById('syncModal').classList.contains('show')){
+    if(Date.now()-lastPublishCheck>10000)checkPublished(false);
     return;
   }
-  const res=await fetch(`https://api.github.com/repos/${SYNC.owner}/${SYNC.repo}`,{
-    headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+token},
-    cache:'no-store',signal:AbortSignal.timeout(10000)
-  });
-  if(res.status===401){
-    showSyncSetup();
-    document.getElementById('syncError').textContent='انتهت صلاحية الرمز. أنشئ رمزاً جديداً.';
-    return;
-  }
-  if(!res.ok)throw new Error('GitHub check failed: '+res.status);
-  storageSet(TOKEN_KEY,token);
-  closeSyncDialog(true);
-}
-async function submitSyncSetup(errorEl){
-  const token=document.getElementById('syncToken').value.trim();
-  const password=document.getElementById('syncNewPassword').value;
-  if(!token.startsWith('github_pat_')){
-    errorEl.textContent='استخدم رمزاً من نوع fine-grained يبدأ بـ github_pat_ .';
-    return;
-  }
-  if(password.length<10){
-    errorEl.textContent='يجب أن تكون كلمة المرور 10 أحرف على الأقل.';
-    return;
-  }
-  if(password!==document.getElementById('syncNewPassword2').value){
-    errorEl.textContent='كلمتا المرور غير متطابقتين.';
-    return;
-  }
-  const record=await encryptToken(token,password);
-  const res=await ghPutFile(SYNC.authFile,JSON.stringify(record),syncAuthSha,'إعداد كلمة مرور الحفظ',token);
-  if(res.status===401||res.status===403||res.status===404){
-    errorEl.textContent='الرمز غير صالح أو لا يملك صلاحية الكتابة على khazain-quiz.';
-    return;
-  }
-  if(!res.ok)throw new Error('GitHub write failed: '+res.status);
-  storageSet(TOKEN_KEY,token);
-  closeSyncDialog(true);
-}
-async function unlockFromStatus(){
-  if(await ensureToken())save();
+  refreshFromRemote();
 }
 
 function renderTeams(){
@@ -2261,19 +2076,17 @@ function collectCurrentEdits(){
     if('closedWrong' in state.boxes[i])delete state.boxes[i].closedWrong;
   });
 }
-async function saveSettings(){
+function saveSettings(){
   collectCurrentEdits();
   const countInput=document.getElementById('boxCountInput');
   if(countInput)resizeBoxes(clampBoxCount(countInput.value));
-  if(!await ensureToken())return;
   settingsSnapshot=null;
   closeSettings();
   render();
-  if(await pushState())showToast('تم الحفظ، وسيظهر التعديل على كل الأجهزة.');
+  if(hasUnpublished())openPublish();
 }
-async function resetGame(){
+function resetGame(){
   if(!confirm('هل تريد إعادة ضبط اللعبة؟ سيتم تصفير النقاط وإعادة ترتيب الأسئلة عشوائياً.'))return;
-  if(!await ensureToken())return;
   if(settingsSnapshot!==null)state=JSON.parse(settingsSnapshot);
   settingsSnapshot=null;
   state.teams.forEach(t=>{t.score=0});
@@ -2283,7 +2096,6 @@ async function resetGame(){
   state.current=0;
   closeSettings();
   render();
-  await pushState();
 }
 function toggleFullscreen(){
   if(!document.fullscreenElement)document.documentElement.requestFullscreen();
@@ -2293,14 +2105,8 @@ function escapeHtml(s){return String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&
 function escapeAttr(s){return String(s).replace(/[&"<]/g,c=>({"&":"&amp;",'"':"&quot;","<":"&lt;"}[c]))}
 
 window.addEventListener('resize',()=>requestAnimationFrame(sizeVaultGrid));
-window.addEventListener('focus',()=>refreshFromRemote());
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshFromRemote()});
-document.getElementById('syncModal').addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&e.target.tagName==='INPUT'){
-    e.preventDefault();
-    submitSyncDialog();
-  }
-});
+window.addEventListener('focus',onPageReturn);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)onPageReturn()});
 load().then(render);
 </script>
 </body>
