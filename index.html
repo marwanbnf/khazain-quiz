@@ -1513,7 +1513,10 @@ async function copyPublishText(){
     textEl.classList.add('show');
     textEl.focus();
     textEl.select();
-    button.textContent='انسخ النص المحدد أدناه';
+    let copied=false;
+    try{copied=document.execCommand('copy')}catch(err){}
+    if(copied)textEl.classList.remove('show');
+    button.textContent=copied?'تم النسخ ✓':'انسخ النص المحدد أدناه';
   }
 }
 async function checkPublished(manual){
