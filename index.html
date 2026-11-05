@@ -1104,20 +1104,8 @@ body::after{
 
 
 /* ===== Shared save across devices ===== */
-.sync-status{
-  align-self:flex-start;margin-top:4px;padding:0;border:0;background:none;
-  color:#5f7a68;font-size:11px;font-weight:700;text-align:right;
-}
+.sync-status{margin-top:4px;color:#4f6a58;font-size:11px;font-weight:700}
 .sync-status.warn{color:var(--red)}
-.sync-status:not(:disabled){cursor:pointer;text-decoration:underline}
-#syncModal .sync-modal{max-width:560px}
-.sync-steps{margin:0 22px 14px 0;color:var(--ink);font-size:14px;line-height:1.9}
-.sync-steps a{color:var(--walnut);font-weight:800}
-.publish-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-.publish-actions .btn{flex:1;min-width:150px;padding:13px 18px;font-size:15px;text-align:center;text-decoration:none}
-.publish-text{display:none;width:100%;height:90px;margin-top:10px;padding:8px;border:1px solid #bda88f;border-radius:9px;background:#fffaf3;color:var(--ink);font:12px monospace}
-.publish-text.show{display:block}
-.sync-error{min-height:20px;margin-top:10px;color:var(--red);font-size:13px;font-weight:800;text-align:center}
 .sync-toast{
   position:fixed;z-index:300;bottom:22px;left:50%;transform:translate(-50%,20px);
   max-width:90vw;padding:12px 20px;border-radius:12px;background:var(--walnut-dark);color:#fffaf2;
@@ -1134,7 +1122,7 @@ body::after{
     <span class="brand-kicker">لعبة جماعية</span>
     <h1>تحدّي الصناديق</h1>
     <span class="brand-meta" id="gameMeta">30 صندوقاً جاهزاً</span>
-    <button type="button" class="sync-status" id="syncStatus" disabled onclick="openPublish()">جارٍ تحميل آخر نسخة…</button>
+    <span class="sync-status" id="syncStatus" role="status">جارٍ تحميل آخر نسخة…</span>
   </div>
   <div class="teams" id="teamsBar"></div>
   <div class="center-panel">
@@ -1221,29 +1209,6 @@ body::after{
   </div>
 </div>
 
-<!-- Publish to every device through GitHub's own editor -->
-<div class="overlay" id="syncModal">
-  <div class="modal sync-modal">
-    <h2>☁ نشر التعديل لكل الأجهزة</h2>
-    <ol class="sync-steps">
-      <li>اضغط <b>نسخ البيانات</b>.</li>
-      <li>اضغط <b>فتح GitHub</b> (يلزم أن تكون مسجّل الدخول بحسابك).</li>
-      <li>اضغط داخل مربع النص، ثم حدّد الكل (Ctrl+A) والصق (Ctrl+V).</li>
-      <li>اضغط <b>Commit changes</b> ثم أكّد بنفس الزر، وارجع إلى هنا.</li>
-    </ol>
-    <div class="publish-actions">
-      <button type="button" class="btn gold" id="publishCopy" onclick="copyPublishText()">نسخ البيانات</button>
-      <a class="btn" id="publishOpen" target="_blank" rel="noopener">فتح GitHub</a>
-    </div>
-    <textarea class="publish-text" id="publishText" dir="ltr" readonly aria-label="بيانات المسابقة للنسخ"></textarea>
-    <div class="sync-error" id="syncError" role="alert"></div>
-    <div class="modal-actions" style="margin-top:12px">
-      <button class="btn success" id="publishCheck" onclick="checkPublished(true)">تحقّق من النشر</button>
-      <button class="btn danger" onclick="closePublish()">لاحقاً</button>
-    </div>
-  </div>
-</div>
-
 <div class="sync-toast" id="syncToast" role="status"></div>
 
 <div class="fx-layer" id="fxLayer"></div>
@@ -1306,13 +1271,17 @@ const SYNC={owner:'marwanbnf',repo:'khazain-quiz',branch:'game-data',file:'state
 const CACHE_KEY='khazainQuiz.cacheV2';
 const API_URL=`https://api.github.com/repos/${SYNC.owner}/${SYNC.repo}/contents/${SYNC.file}?ref=${SYNC.branch}`;
 const RAW_URL=`https://raw.githubusercontent.com/${SYNC.owner}/${SYNC.repo}/${SYNC.branch}/${SYNC.file}`;
-const EDIT_URL=`https://github.com/${SYNC.owner}/${SYNC.repo}/edit/${SYNC.branch}/${SYNC.file}`;
+const KEY_STORAGE='khazainQuiz.saveKey';
 let remoteSha=null;
 let lastSyncedJson=null;
 let settingsSnapshot=null;
 let lastRefresh=0;
-let lastPublishCheck=0;
 let loadFailed=false;
+let saveKey=null;
+let saveKeyInvalid=false;
+let syncTimer=null;
+let syncBusy=false;
+let syncAgain=false;
 let pendingChoice=null;
 let currentBoxIdx=null;
 let choiceLocked=false;
@@ -1409,7 +1378,9 @@ function readCache(){
 async function fetchRemote(){
   const options={cache:'no-store',signal:AbortSignal.timeout(10000)};
   try{
-    const res=await fetch(`${API_URL}&t=${Date.now()}`,{...options,headers:{Accept:'application/vnd.github+json'}});
+    const headers={Accept:'application/vnd.github+json'};
+    if(saveKey&&!saveKeyInvalid)headers.Authorization='Bearer '+saveKey;
+    const res=await fetch(`${API_URL}&t=${Date.now()}`,{...options,headers});
     if(!res.ok)throw new Error('GitHub read failed: '+res.status);
     const data=await res.json();
     const bytes=Uint8Array.from(atob(data.content.replace(/\s/g,'')),c=>c.charCodeAt(0));
@@ -1421,17 +1392,31 @@ async function fetchRemote(){
   }
 }
 
+/* The presenter's link carries the save key after #, which browsers never send to any server. */
+function captureSaveKey(){
+  const match=location.hash.match(/^#k=([\w-]+)$/);
+  if(match){
+    saveKey=match[1];
+    try{localStorage.setItem(KEY_STORAGE,saveKey)}catch(e){}
+    history.replaceState(null,'',location.pathname+location.search);
+    return;
+  }
+  try{saveKey=localStorage.getItem(KEY_STORAGE)}catch(e){}
+}
+
 function setSyncStatus(kind){
   const el=document.getElementById('syncStatus');
   if(!el)return;
   const labels={
-    synced:'☁ هذه آخر نسخة منشورة لكل الأجهزة',
-    local:'📝 تغييرات على هذا الجهاز فقط — اضغط لنشرها',
-    offline:'⚠ تعذّر جلب آخر نسخة — هذه آخر نسخة على هذا الجهاز'
+    synced:'☁ محفوظ',
+    saving:'جارٍ الحفظ…',
+    error:'⚠ تعذّر الحفظ، ستُعاد المحاولة تلقائياً',
+    viewOnly:'👁 رابط للعرض: التغييرات تبقى على هذا الجهاز فقط',
+    keyInvalid:'⚠ رابط الحفظ منتهٍ: اطلب رابطاً جديداً من صاحب المسابقة',
+    offline:'⚠ تعذّر جلب آخر نسخة، وهذه آخر نسخة على هذا الجهاز'
   };
   el.textContent=labels[kind];
-  el.classList.toggle('warn',kind!=='synced');
-  el.disabled=kind!=='local';
+  el.classList.toggle('warn',kind!=='synced'&&kind!=='saving');
 }
 function showToast(message){
   const el=document.getElementById('syncToast');
@@ -1461,20 +1446,92 @@ async function load(){
   }
 }
 
-function hasUnpublished(){return JSON.stringify(state)!==lastSyncedJson}
+function hasUnsaved(){return JSON.stringify(state)!==lastSyncedJson}
 
 function save(){
   writeCache();
-  if(loadFailed)setSyncStatus('offline');
-  else setSyncStatus(hasUnpublished()?'local':'synced');
+  if(!hasUnsaved()){
+    if(!syncBusy)setSyncStatus('synced');
+    return;
+  }
+  if(saveKeyInvalid){
+    setSyncStatus('keyInvalid');
+    return;
+  }
+  if(!saveKey){
+    setSyncStatus(loadFailed?'offline':'viewOnly');
+    return;
+  }
+  setSyncStatus('saving');
+  clearTimeout(syncTimer);
+  syncTimer=setTimeout(pushState,700);
 }
 
-/* Picks up edits published from another device, without interrupting an open dialog or unpublished play. */
+async function pushState(){
+  clearTimeout(syncTimer);
+  if(settingsSnapshot!==null){
+    syncTimer=setTimeout(pushState,2000);
+    return;
+  }
+  if(syncBusy){
+    syncAgain=true;
+    return;
+  }
+  if(!saveKey||saveKeyInvalid)return;
+  const json=JSON.stringify(state);
+  if(json===lastSyncedJson){
+    setSyncStatus('synced');
+    return;
+  }
+  syncBusy=true;
+  setSyncStatus('saving');
+  try{
+    const bytes=new TextEncoder().encode(JSON.stringify(state,null,2));
+    const body={message:'حفظ بيانات المسابقة',branch:SYNC.branch,content:btoa(Array.from(bytes,b=>String.fromCharCode(b)).join(''))};
+    if(remoteSha)body.sha=remoteSha;
+    const res=await fetch(API_URL.split('?')[0],{
+      method:'PUT',
+      headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+saveKey,'Content-Type':'application/json'},
+      body:JSON.stringify(body),
+      signal:AbortSignal.timeout(15000)
+    });
+    if(res.ok){
+      const data=await res.json();
+      remoteSha=data.content.sha;
+      lastSyncedJson=json;
+      loadFailed=false;
+      writeCache();
+      setSyncStatus('synced');
+    }else if(res.status===409||res.status===422){
+      // Another device saved first: its newer edits must not be overwritten by this older copy.
+      const remote=await fetchRemote();
+      applyRemote(remote);
+      loadFailed=false;
+      render();
+      showToast('تم تحديث المسابقة من جهاز آخر، فأعد آخر تعديل إن لزم.');
+    }else if(res.status===401||res.status===403||res.status===404){
+      saveKeyInvalid=true;
+      setSyncStatus('keyInvalid');
+    }else{
+      throw new Error('GitHub write failed: '+res.status);
+    }
+  }catch(e){
+    setSyncStatus('error');
+    syncTimer=setTimeout(pushState,15000);
+  }
+  syncBusy=false;
+  if(syncAgain){
+    syncAgain=false;
+    pushState();
+  }
+}
+
+/* Picks up saves from another device, without interrupting an open dialog or an unsaved change. */
 async function refreshFromRemote(force=false){
   const now=Date.now();
   if(!force&&now-lastRefresh<30000)return;
-  const busy=()=>document.querySelector('.overlay.show')||pendingChoice;
-  if(busy()||(!force&&hasUnpublished()&&!loadFailed))return;
+  const busy=()=>document.querySelector('.overlay.show')||pendingChoice||syncBusy;
+  if(busy()||(!force&&hasUnsaved()&&!loadFailed))return;
   lastRefresh=now;
   try{
     const remote=await fetchRemote();
@@ -1486,69 +1543,7 @@ async function refreshFromRemote(force=false){
     }
     applyRemote(remote);
     render();
-    showToast('تم تحميل آخر التعديلات المنشورة.');
   }catch(e){}
-}
-
-function openPublish(){
-  const textEl=document.getElementById('publishText');
-  textEl.value=JSON.stringify(state,null,2);
-  textEl.classList.remove('show');
-  document.getElementById('publishOpen').href=EDIT_URL;
-  document.getElementById('publishCopy').textContent='نسخ البيانات';
-  document.getElementById('syncError').textContent='';
-  document.getElementById('syncModal').classList.add('show');
-}
-function closePublish(){
-  document.getElementById('syncModal').classList.remove('show');
-  save();
-}
-async function copyPublishText(){
-  const textEl=document.getElementById('publishText');
-  const button=document.getElementById('publishCopy');
-  try{
-    await navigator.clipboard.writeText(textEl.value);
-    button.textContent='تم النسخ ✓';
-  }catch(e){
-    textEl.classList.add('show');
-    textEl.focus();
-    textEl.select();
-    let copied=false;
-    try{copied=document.execCommand('copy')}catch(err){}
-    if(copied)textEl.classList.remove('show');
-    button.textContent=copied?'تم النسخ ✓':'انسخ النص المحدد أدناه';
-  }
-}
-async function checkPublished(manual){
-  const errorEl=document.getElementById('syncError');
-  const button=document.getElementById('publishCheck');
-  if(button.disabled)return;
-  lastPublishCheck=Date.now();
-  button.disabled=true;
-  if(manual)errorEl.textContent='';
-  try{
-    const remote=await fetchRemote();
-    const local=JSON.stringify(state);
-    if(JSON.stringify(JSON.parse(remote.text))===local){
-      remoteSha=remote.sha;
-      lastSyncedJson=local;
-      closePublish();
-      showToast('تم النشر، وسيظهر التعديل على كل الأجهزة.');
-    }else if(manual){
-      errorEl.textContent='لم يصل التعديل بعد. تأكد من الضغط على Commit changes ثم حاول بعد ثوانٍ.';
-    }
-  }catch(e){
-    if(manual)errorEl.textContent='تعذّر التحقق. تأكد من الإنترنت ومن لصق البيانات كاملة ثم حاول مجدداً.';
-  }finally{
-    button.disabled=false;
-  }
-}
-function onPageReturn(){
-  if(document.getElementById('syncModal').classList.contains('show')){
-    if(Date.now()-lastPublishCheck>10000)checkPublished(false);
-    return;
-  }
-  refreshFromRemote();
 }
 
 function renderTeams(){
@@ -2086,7 +2081,7 @@ function saveSettings(){
   settingsSnapshot=null;
   closeSettings();
   render();
-  if(hasUnpublished())openPublish();
+  if(saveKey&&!saveKeyInvalid&&hasUnsaved())pushState();
 }
 function resetGame(){
   if(!confirm('هل تريد إعادة ضبط اللعبة؟ سيتم تصفير النقاط وإعادة ترتيب الأسئلة عشوائياً.'))return;
@@ -2108,8 +2103,9 @@ function escapeHtml(s){return String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&
 function escapeAttr(s){return String(s).replace(/[&"<]/g,c=>({"&":"&amp;",'"':"&quot;","<":"&lt;"}[c]))}
 
 window.addEventListener('resize',()=>requestAnimationFrame(sizeVaultGrid));
-window.addEventListener('focus',onPageReturn);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)onPageReturn()});
+window.addEventListener('focus',()=>refreshFromRemote());
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshFromRemote()});
+captureSaveKey();
 load().then(render);
 </script>
 </body>
