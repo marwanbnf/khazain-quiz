@@ -1,0 +1,1890 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<title>تحدّي الخزائن - 30 سؤالاً</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI','Tahoma',sans-serif}
+html,body{height:100%;width:100%;overflow:hidden}
+body{
+  background:linear-gradient(-45deg,#1a1247,#0a0e1f,#2a1850,#0a1f3a,#05070f);
+  background-size:400% 400%;animation:bgShift 18s ease infinite;
+  color:#fff;display:flex;flex-direction:column;padding:10px 16px;gap:10px;min-width:1200px;
+  position:relative;
+}
+@keyframes bgShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+body::before{content:"";position:fixed;inset:0;background-image:radial-gradient(2px 2px at 20% 30%,#fff,transparent),radial-gradient(1px 1px at 70% 70%,#fff,transparent),radial-gradient(1.5px 1.5px at 40% 80%,#fff,transparent),radial-gradient(1px 1px at 90% 20%,#fff,transparent),radial-gradient(1.2px 1.2px at 15% 75%,#fff,transparent),radial-gradient(1px 1px at 55% 15%,#fff,transparent);opacity:.3;animation:twinkle 5s infinite alternate;pointer-events:none;z-index:0}
+@keyframes twinkle{from{opacity:.15}to{opacity:.45}}
+
+.flash{position:fixed;inset:0;pointer-events:none;z-index:90;opacity:0}
+.flash.green{background:radial-gradient(circle,rgba(6,214,160,.55),transparent 70%);animation:flashAnim .9s ease-out}
+.flash.red{background:radial-gradient(circle,rgba(239,71,111,.7),transparent 70%);animation:flashAnim 1s ease-out}
+@keyframes flashAnim{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
+
+.top{display:flex;align-items:center;gap:12px;z-index:2}
+.teams{display:flex;gap:14px;flex:1;overflow-x:auto;padding:8px 4px}
+.teams::-webkit-scrollbar{height:6px}
+.teams::-webkit-scrollbar-thumb{background:#444;border-radius:3px}
+.team{
+  min-width:230px;flex:0 0 auto;
+  background:linear-gradient(135deg,rgba(40,55,120,.55),rgba(30,40,90,.35));
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:2px solid rgba(255,255,255,.12);border-radius:18px;padding:12px 18px;
+  position:relative;transition:all .6s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  box-shadow:0 10px 30px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.15);
+  transform-style:preserve-3d;
+}
+.team::after{
+  content:"";position:absolute;inset:-3px;border-radius:20px;padding:3px;
+  background:conic-gradient(from 0deg,transparent,var(--tc,#ffd166),transparent 60%);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;opacity:0;transition:opacity .5s;
+}
+.team.active::after{opacity:1;animation:rotateBorder 3s linear infinite}
+@keyframes rotateBorder{to{transform:rotate(360deg)}}
+.team.active{
+  border-color:var(--tc,#ffd166);
+  box-shadow:0 0 35px var(--tg,rgba(255,209,102,.6)),inset 0 1px 0 rgba(255,255,255,.2);
+  animation:teamPulse 1.6s ease-in-out infinite;
+}
+@keyframes teamPulse{50%{transform:translateY(-3px) scale(1.025)}}
+.team.active::before{content:"◄ الدور الآن";position:absolute;top:-13px;right:50%;transform:translateX(50%);background:var(--tc,#ffd166);color:#000;font-size:11px;font-weight:bold;padding:3px 12px;border-radius:10px;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.5)}
+.team-emoji{font-size:22px;line-height:1}
+.team-name{font-size:17px;font-weight:bold;text-shadow:0 2px 4px rgba(0,0,0,.5)}
+.team-score{font-size:28px;font-weight:bold;color:#ffd166;text-shadow:0 0 12px rgba(255,209,102,.5);transition:transform .3s}
+.team-score.bump{animation:scoreBump .8s ease-out}
+@keyframes scoreBump{30%{transform:scale(1.4);color:#fff;text-shadow:0 0 25px #ffd166}}
+.team.glow-gold{animation:goldGlow 1s ease-out}
+@keyframes goldGlow{0%,100%{box-shadow:0 10px 30px rgba(0,0,0,.5)}50%{box-shadow:0 0 60px 10px rgba(255,209,102,.9),0 0 100px rgba(255,209,102,.5)}}
+.team.shake{animation:teamShake .7s}
+@keyframes teamShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+.progress-ring{width:100%;height:5px;background:rgba(0,0,0,.4);border-radius:3px;overflow:hidden;margin-top:2px}
+.progress-ring>div{height:100%;background:linear-gradient(90deg,#ffd166,#ff9d00);transition:width .8s cubic-bezier(.4,0,.2,1);border-radius:3px;box-shadow:0 0 8px rgba(255,209,102,.6)}
+
+.center-panel{display:flex;flex-direction:column;gap:6px}
+.btn{
+  background:linear-gradient(135deg,#6a4cff,#4a2dcf);color:#fff;border:none;
+  padding:9px 18px;border-radius:10px;cursor:pointer;font-weight:bold;font-size:13px;
+  transition:all .35s cubic-bezier(.4,0,.2,1);box-shadow:0 4px 14px rgba(106,76,255,.4);white-space:nowrap;
+  position:relative;overflow:hidden;
+}
+.btn::before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent,rgba(255,255,255,.25),transparent);transform:translateX(-100%);transition:transform .6s}
+.btn:hover::before{transform:translateX(100%)}
+.btn:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(106,76,255,.65)}
+.btn.gold{background:linear-gradient(135deg,#ffd166,#e6a82e);color:#000;box-shadow:0 4px 14px rgba(255,209,102,.45)}
+.btn.gold:hover{box-shadow:0 8px 22px rgba(255,209,102,.7)}
+.btn.danger{background:linear-gradient(135deg,#ef476f,#c1304f);box-shadow:0 4px 14px rgba(239,71,111,.45)}
+.btn.success{background:linear-gradient(135deg,#06d6a0,#039774);box-shadow:0 4px 14px rgba(6,214,160,.45)}
+.btn.small{padding:6px 12px;font-size:12px}
+.btn.gear{font-size:18px;padding:8px 12px}
+.btn.gear:hover .gear-icon{transform:rotate(180deg)}
+.gear-icon{display:inline-block;transition:transform .8s cubic-bezier(.4,0,.2,1)}
+
+/* ===== Matte Golden Card Box Design ===== */
+.grid{
+  flex:1;display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(5,1fr);
+  gap:10px;z-index:2;min-height:0;max-width:1600px;margin:0 auto;width:100%;padding:4px;
+}
+.box{
+  position:relative;cursor:pointer;
+  border-radius:16px;
+  background:
+    linear-gradient(160deg,
+      #d4a84b 0%,
+      #b8891e 30%,
+      #a07418 55%,
+      #b8891e 75%,
+      #c9962a 100%);
+  border:3px solid #6b4500;
+  box-shadow:
+    inset 0 2px 4px rgba(220,180,80,.22),
+    inset 0 -3px 8px rgba(50,25,0,.4),
+    0 6px 18px rgba(0,0,0,.6);
+  display:flex;align-items:center;justify-content:center;
+  transition:all .4s cubic-bezier(.4,0,.2,1);
+  overflow:hidden;
+}
+/* Subtle shine on hover only — matte feel */
+.box::before{
+  content:"";position:absolute;inset:0;border-radius:13px;
+  background:linear-gradient(115deg,transparent 35%,rgba(255,245,200,.15) 50%,transparent 65%);
+  transform:translateX(-160%);transition:transform .7s;pointer-events:none;
+}
+/* Inner dashed border */
+.box::after{
+  content:"";position:absolute;inset:8px;border-radius:9px;
+  border:2px dashed rgba(80,40,0,.5);pointer-events:none;
+}
+.box:hover:not(.opened)::before{transform:translateX(160%)}
+
+/* Number — bold dark brown on matte gold */
+.box-num{
+  position:relative;z-index:2;
+  width:auto;height:auto;border-radius:0;
+  background:none;
+  display:flex;align-items:center;justify-content:center;
+  font-size:44px;font-weight:900;
+  color:#2e1500;
+  font-family:'Georgia','Times New Roman',serif;
+  text-shadow:0 1px 0 rgba(180,120,30,.4),0 -1px 0 rgba(0,0,0,.2);
+  letter-spacing:-1px;
+  box-shadow:none;
+}
+
+.box:hover:not(.opened){
+  transform:translateY(-4px) scale(1.04);
+  box-shadow:
+    inset 0 2px 4px rgba(200,160,60,.2),
+    inset 0 -3px 8px rgba(50,25,0,.35),
+    0 14px 28px rgba(0,0,0,.65),
+    0 0 16px rgba(140,90,0,.25);
+  border-color:#8a5c00;
+}
+.box:hover:not(.opened) .box-num{
+  animation:numGlow .7s ease-in-out infinite alternate;
+}
+@keyframes numGlow{
+  to{ color:#1a0a00; transform:scale(1.06); }
+}
+
+/* Opened state */
+.box.opened{
+  background:linear-gradient(150deg,#2a2a35,#15151c);
+  border-color:rgba(255,255,255,.07);
+  cursor:not-allowed;
+  box-shadow:inset 0 4px 14px rgba(0,0,0,.7),0 4px 10px rgba(0,0,0,.3);
+  animation:openBoxAnim .9s ease-out;
+}
+.box.opened::after{display:none}
+.box.opened .box-num{
+  color:#444;
+  text-shadow:none;
+  opacity:.4;
+}
+.box.opened > .seal{
+  position:absolute;font-size:50px;opacity:.55;z-index:3;
+  filter:drop-shadow(0 2px 6px rgba(0,0,0,.6));
+}
+@keyframes openBoxAnim{0%{transform:scale(1.15) rotate(8deg);filter:brightness(1.5)}50%{transform:scale(.95) rotate(-3deg)}100%{transform:scale(1) rotate(0)}}
+/* Wrong-answer wobble (stays on board) */
+.box.wrong-wobble{animation:wrongWobble .8s cubic-bezier(.36,.07,.19,.97)}
+@keyframes wrongWobble{
+  0%,100%{transform:translateX(0) rotate(0)}
+  15%{transform:translateX(-10px) rotate(-3deg);box-shadow:0 0 30px rgba(239,71,111,.7)}
+  30%{transform:translateX(10px) rotate(3deg);box-shadow:0 0 40px rgba(239,71,111,.9)}
+  45%{transform:translateX(-8px) rotate(-2deg)}
+  60%{transform:translateX(8px) rotate(2deg)}
+  80%{transform:translateX(-3px)}
+}
+
+/* Modal */
+.overlay{
+  position:fixed;inset:0;background:rgba(5,8,20,.75);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  display:none;align-items:center;justify-content:center;z-index:100;animation:fadeIn .5s;
+}
+.overlay.show{display:flex}
+@keyframes fadeIn{from{opacity:0;backdrop-filter:blur(0)}}
+.modal{
+  background:linear-gradient(135deg,rgba(40,50,110,.85),rgba(25,30,70,.85));
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:2px solid rgba(255,255,255,.15);
+  border-radius:22px;padding:32px;max-width:720px;width:90%;max-height:90vh;
+  overflow-y:auto;animation:slideUp .6s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 25px 70px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.15);
+}
+/* NEW wrong exit: crack & implode (different from before) */
+.modal.exiting-wrong{animation:wrongImplode .85s cubic-bezier(.7,0,.84,0) forwards}
+@keyframes wrongImplode{
+  0%{transform:scale(1);opacity:1;filter:blur(0)}
+  20%{transform:scale(1.08) translateY(-10px);filter:blur(0) drop-shadow(0 0 30px rgba(239,71,111,.8))}
+  40%{transform:scale(.95) translateY(0) skewX(-3deg);filter:blur(1px) hue-rotate(-20deg)}
+  60%{transform:scale(.7) translateY(20px) skewX(4deg) rotate(-5deg);filter:blur(4px) hue-rotate(-40deg)}
+  100%{transform:scale(0) translateY(80px) rotate(-20deg);opacity:0;filter:blur(20px) hue-rotate(-60deg)}
+}
+@keyframes slideUp{from{transform:translateY(60px) scale(.92);opacity:0}}
+.modal h2{margin-bottom:20px;color:#ffd166;font-size:26px;text-align:center;text-shadow:0 0 20px rgba(255,209,102,.4)}
+.question-text{font-size:23px;line-height:1.7;text-align:center;padding:24px;background:rgba(0,0,0,.35);border-radius:14px;margin-bottom:22px;border:1px solid rgba(255,255,255,.08)}
+.answer-reveal{
+  font-size:26px;font-weight:bold;text-align:center;padding:24px;
+  background:linear-gradient(135deg,#06d6a0,#039774);border-radius:14px;
+  margin-bottom:22px;animation:answerIn .8s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 0 40px rgba(6,214,160,.5),inset 0 1px 0 rgba(255,255,255,.2);
+  position:relative;overflow:hidden;
+}
+.answer-reveal::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 40%,rgba(255,215,0,.4) 50%,transparent 60%);animation:shimmerAns 1.5s ease-out}
+@keyframes shimmerAns{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+@keyframes answerIn{0%{transform:scale(.3);opacity:0;filter:blur(10px)}60%{transform:scale(1.1);filter:blur(0)}100%{transform:scale(1);opacity:1}}
+.modal-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.modal-actions .btn{flex:1;min-width:150px;padding:14px 20px;font-size:16px}
+
+.reveal-value{font-size:72px;font-weight:900;text-align:center;padding:34px;border-radius:18px;margin:22px 0;animation:answerIn .9s cubic-bezier(.34,1.56,.64,1);text-shadow:0 4px 20px rgba(0,0,0,.5)}
+.reveal-value.positive{background:linear-gradient(135deg,#06d6a0,#039774);color:#fff;box-shadow:0 0 50px rgba(6,214,160,.6)}
+.reveal-value.negative{background:linear-gradient(135deg,#ef476f,#c1304f);color:#fff;box-shadow:0 0 50px rgba(239,71,111,.6)}
+.reveal-target{font-size:22px;text-align:center;color:#ffd166;margin-bottom:14px}
+
+/* Settings tabs */
+.tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:0;flex-wrap:wrap}
+.tab{padding:10px 18px;cursor:pointer;border:none;background:transparent;color:#aaa;font-weight:bold;font-size:14px;border-bottom:3px solid transparent;transition:all .3s}
+.tab.active{color:#ffd166;border-bottom-color:#ffd166}
+.tab:hover{color:#fff}
+.tab-content{display:none}
+.tab-content.active{display:block;animation:fadeIn .5s}
+
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.settings-section{background:rgba(0,0,0,.3);padding:18px;border-radius:14px;margin-bottom:14px;border:1px solid rgba(255,255,255,.08)}
+.settings-section h3{color:#ffd166;margin-bottom:14px;font-size:18px;padding-bottom:8px;border-bottom:1px solid rgba(255,209,102,.2)}
+.settings-section .hint{color:#9aa;font-size:12px;margin-bottom:10px;line-height:1.5}
+
+.team-edit{
+  display:grid;grid-template-columns:auto 1fr auto auto auto auto;gap:8px;align-items:center;
+  background:rgba(255,255,255,.04);padding:10px 12px;border-radius:10px;margin-bottom:8px;
+  border:1px solid rgba(255,255,255,.06);
+}
+.team-edit .te-label{color:var(--tc,#ffd166);font-weight:bold;font-size:14px;min-width:90px}
+.team-edit input[type=text]{padding:8px 12px;border-radius:8px;border:1px solid #3a4580;background:#0d1130;color:#fff;font-size:14px;width:100%}
+.team-edit .score-box{display:flex;align-items:center;gap:4px;background:#0d1130;border:1px solid #3a4580;border-radius:8px;padding:2px}
+.team-edit .score-box input{width:80px;padding:6px 8px;border:none;background:transparent;color:#ffd166;font-size:15px;font-weight:bold;text-align:center}
+.team-edit .score-box button{background:rgba(255,255,255,.08);border:none;color:#fff;width:26px;height:26px;border-radius:6px;cursor:pointer;font-weight:bold;font-size:14px;transition:all .2s}
+.team-edit .score-box button:hover{background:#ffd166;color:#000}
+
+.box-edit{background:rgba(255,255,255,.05);padding:14px;border-radius:10px;border:1px solid #2a3470}
+.box-edit-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:8px;border-bottom:1px dashed rgba(255,255,255,.1)}
+.box-edit-header b{color:#ffd166;font-size:15px}
+.box-edit input[type=text],.box-edit input[type=number],.box-edit textarea,.box-edit select{
+  width:100%;padding:7px 10px;margin-top:4px;border-radius:6px;
+  border:1px solid #3a4580;background:#0d1130;color:#fff;font-size:13px;font-family:inherit;
+}
+.box-edit textarea{resize:vertical;min-height:54px}
+.box-edit label{font-size:12px;color:#bbb;display:block;margin-top:8px;font-weight:bold}
+
+.value-editor{display:grid;grid-template-columns:1fr auto;gap:6px;margin-top:4px}
+.value-editor .sign-toggle{display:flex;border-radius:6px;overflow:hidden;border:1px solid #3a4580}
+.value-editor .sign-toggle button{
+  background:#0d1130;color:#888;border:none;padding:6px 10px;cursor:pointer;
+  font-weight:bold;font-size:13px;transition:all .2s;min-width:50px;
+}
+.value-editor .sign-toggle button.active.add{background:linear-gradient(135deg,#06d6a0,#039774);color:#fff}
+.value-editor .sign-toggle button.active.sub{background:linear-gradient(135deg,#ef476f,#c1304f);color:#fff}
+
+.gift-buttons{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;justify-content:center}
+.gift-buttons .btn{flex:0 0 auto;min-width:140px;padding:14px 18px;font-size:15px;animation:answerIn .6s backwards}
+.gift-buttons .btn:nth-child(2){animation-delay:.1s}
+.gift-buttons .btn:nth-child(3){animation-delay:.2s}
+.gift-buttons .btn:nth-child(4){animation-delay:.3s}
+
+.fx-layer{position:fixed;inset:0;pointer-events:none;z-index:200;overflow:hidden}
+.big-icon{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.3);font-size:240px;z-index:201;pointer-events:none;filter:drop-shadow(0 10px 30px rgba(0,0,0,.7))}
+.big-icon.correct{animation:bigCorrect .9s cubic-bezier(.34,1.56,.64,1) forwards}
+.big-icon.wrong{animation:bigWrongNew 1.2s cubic-bezier(.4,0,.2,1) forwards;font-size:280px}
+@keyframes bigWrongNew{
+  0%{transform:translate(-50%,-50%) scale(.2) rotate(-180deg);opacity:0;filter:blur(20px)}
+  25%{transform:translate(-50%,-50%) scale(1.6) rotate(0);opacity:1;filter:blur(0) drop-shadow(0 0 40px #ef476f)}
+  50%{transform:translate(-50%,-50%) scale(1.4) rotate(0);filter:blur(0) drop-shadow(0 0 60px #ef476f) brightness(1.5)}
+  100%{transform:translate(-50%,80%) scale(.5) rotate(45deg);opacity:0;filter:blur(15px)}
+}
+.shard{
+  position:fixed;width:60px;height:60px;z-index:200;pointer-events:none;
+  background:linear-gradient(135deg,#ef476f,#8a1a3a);
+  clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);
+  animation:shardFly 1s cubic-bezier(.4,0,.6,1) forwards;
+}
+@keyframes shardFly{
+  0%{transform:translate(0,0) rotate(0) scale(.3);opacity:0}
+  20%{opacity:1;transform:translate(0,0) rotate(90deg) scale(1)}
+  100%{transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(.4);opacity:0}
+}
+
+.coin{position:fixed;font-size:34px;z-index:200;pointer-events:none;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5))}
+.coin.burst{animation:coinBurst .9s ease-out forwards}
+@keyframes coinBurst{0%{transform:translate(0,0) rotate(0) scale(.4);opacity:0}20%{opacity:1;transform:translate(0,0) rotate(180deg) scale(1.1)}100%{transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(.6);opacity:0}}
+
+.fly-coin{position:fixed;font-size:30px;z-index:200;pointer-events:none;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5));animation:flyCoin .9s cubic-bezier(.4,0,.6,1) forwards}
+@keyframes flyCoin{0%{transform:translate(0,0) rotate(0) scale(.5);opacity:0}10%{opacity:1;transform:translate(0,0) rotate(180deg) scale(1)}90%{opacity:1}100%{transform:translate(var(--tx),var(--ty)) rotate(720deg) scale(.7);opacity:0}}
+@keyframes bigCorrect{0%{transform:translate(-50%,-50%) scale(.3) rotate(-15deg);opacity:0}40%{transform:translate(-50%,-50%) scale(1.3) rotate(0);opacity:1}100%{transform:translate(-50%,-50%) scale(1) rotate(0);opacity:0}}
+</style>
+<style>
+/* ===== 2026 redesign: warm, semi-realistic wooden boxes ===== */
+:root{
+  --ink:#211914;
+  --ink-soft:#4a382d;
+  --paper:#f4ede2;
+  --paper-2:#e8dccb;
+  --walnut:#714629;
+  --walnut-dark:#3b2418;
+  --walnut-light:#a56d3f;
+  --brass:#c79a4a;
+  --brass-light:#f0d18a;
+  --brass-dark:#76511f;
+  --green:#2f6c57;
+  --red:#9f4b40;
+  --shadow:rgba(39,25,17,.28);
+}
+
+*{font-family:"Tahoma","Arial","Segoe UI",sans-serif}
+html,body{min-width:0}
+body{
+  overflow:hidden;
+  padding:14px clamp(12px,2vw,28px) 18px;
+  gap:14px;
+  color:var(--ink);
+  background:
+    radial-gradient(circle at 15% 5%,rgba(255,255,255,.72),transparent 28%),
+    radial-gradient(circle at 86% 88%,rgba(155,111,70,.13),transparent 32%),
+    linear-gradient(145deg,#f7f1e8 0%,#eee3d4 58%,#e5d5c1 100%);
+}
+body::before{
+  z-index:0;
+  opacity:.28;
+  animation:none;
+  background:
+    repeating-linear-gradient(8deg,rgba(101,69,45,.035) 0 1px,transparent 1px 10px),
+    repeating-linear-gradient(92deg,rgba(255,255,255,.18) 0 1px,transparent 1px 18px);
+}
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  box-shadow:inset 0 0 120px rgba(78,48,28,.12);
+}
+
+.top{
+  display:grid;
+  grid-template-columns:minmax(210px,.72fr) minmax(480px,2fr) auto;
+  align-items:stretch;
+  gap:16px;
+  z-index:2;
+  max-width:1640px;
+  width:100%;
+  margin:0 auto;
+}
+.brand{
+  min-width:210px;
+  padding:14px 18px;
+  border:1px solid rgba(92,59,34,.25);
+  border-radius:18px;
+  background:rgba(255,252,247,.76);
+  box-shadow:0 12px 28px rgba(72,46,29,.12),inset 0 1px #fff;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.brand-kicker{
+  color:var(--brass-dark);
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.08em;
+}
+.brand h1{
+  margin:2px 0 3px;
+  font-size:clamp(23px,2vw,34px);
+  line-height:1.15;
+  color:var(--ink);
+}
+.brand-meta{color:#795d49;font-size:12px;font-weight:700}
+
+.teams{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:12px;
+  padding:0;
+  overflow:visible;
+}
+.team{
+  min-width:0;
+  width:100%;
+  border:1px solid rgba(94,62,39,.2);
+  border-radius:18px;
+  padding:11px 15px;
+  background:linear-gradient(145deg,rgba(255,253,249,.96),rgba(237,225,208,.92));
+  color:var(--ink);
+  box-shadow:0 12px 28px rgba(69,43,27,.12),inset 0 1px #fff;
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  grid-template-rows:auto auto;
+  align-items:center;
+  column-gap:10px;
+  transform:none;
+}
+.team::after{display:none}
+.team.active{
+  border-color:var(--brass);
+  animation:none;
+  box-shadow:0 0 0 3px rgba(199,154,74,.18),0 14px 30px rgba(69,43,27,.16),inset 0 1px #fff;
+}
+.team.active::before{
+  content:"الدور الآن";
+  top:-9px;
+  right:16px;
+  transform:none;
+  color:#fff;
+  background:linear-gradient(135deg,var(--walnut),var(--walnut-dark));
+  padding:4px 10px;
+  border:1px solid rgba(255,255,255,.25);
+  box-shadow:0 5px 12px rgba(52,31,20,.2);
+}
+.team-emoji{
+  grid-row:1/3;
+  width:38px;
+  height:38px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  font-size:19px;
+  background:linear-gradient(145deg,#eed49a,#b98534);
+  border:2px solid #fff8e8;
+  box-shadow:0 3px 8px rgba(88,56,26,.22);
+}
+.team-name{
+  align-self:end;
+  color:var(--ink-soft);
+  font-size:14px;
+  text-shadow:none;
+}
+.team-score{
+  grid-row:1/3;
+  color:var(--walnut-dark);
+  font-size:30px;
+  text-shadow:none;
+}
+.progress-ring{
+  height:5px;
+  margin:4px 0 0;
+  background:rgba(90,60,39,.12);
+}
+.progress-ring>div{
+  background:linear-gradient(90deg,var(--walnut),var(--brass));
+  box-shadow:none;
+}
+
+.center-panel{
+  display:grid;
+  grid-template-columns:repeat(3,46px);
+  align-content:center;
+  gap:8px;
+}
+.btn{
+  border:1px solid rgba(80,52,33,.2);
+  border-radius:12px;
+  background:linear-gradient(145deg,#7b4d2d,#4d2d1d);
+  color:#fffaf2;
+  box-shadow:0 6px 14px rgba(67,40,24,.18),inset 0 1px rgba(255,255,255,.2);
+  transition:transform .2s ease,box-shadow .2s ease,filter .2s ease;
+}
+.btn:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.05);
+  box-shadow:0 9px 18px rgba(67,40,24,.22),inset 0 1px rgba(255,255,255,.2);
+}
+.center-panel .btn{
+  width:46px;
+  height:46px;
+  padding:0;
+  font-size:0;
+  display:grid;
+  place-items:center;
+}
+.center-panel .btn .gear-icon,.center-panel .btn::after{font-size:19px}
+.center-panel .btn:nth-child(2)::after{content:"↻"}
+.center-panel .btn:nth-child(3)::after{content:"⛶"}
+.btn.gold{
+  background:linear-gradient(145deg,#d4ad65,#a67932);
+  color:#2f2117;
+}
+.btn.success{background:linear-gradient(145deg,#4f806c,#315b4b)}
+.btn.danger{background:linear-gradient(145deg,#ad6256,#7e3e35)}
+.btn.small{padding:7px 12px}
+
+.grid{
+  --grid-cols:6;
+  --grid-rows:5;
+  --tile-size:100px;
+  flex:1;
+  min-height:0;
+  width:100%;
+  max-width:1640px;
+  height:100%;
+  margin:0 auto;
+  padding:clamp(14px,1.5vw,24px);
+  display:grid;
+  grid-template-columns:repeat(var(--grid-cols),var(--tile-size));
+  grid-template-rows:repeat(var(--grid-rows),var(--tile-size));
+  grid-auto-rows:var(--tile-size);
+  justify-content:space-evenly;
+  align-content:space-evenly;
+  gap:clamp(8px,1vw,14px);
+  overflow:hidden;
+  border:1px solid rgba(89,57,34,.16);
+  border-radius:24px;
+  background:rgba(255,252,247,.52);
+  box-shadow:inset 0 1px rgba(255,255,255,.8),0 20px 50px rgba(68,43,27,.1);
+  scrollbar-color:#a88662 transparent;
+}
+
+.box{
+  isolation:isolate;
+  aspect-ratio:1/1;
+  width:100%;
+  min-width:0;
+  border-radius:11px;
+  border:2px solid #342117;
+  overflow:visible;
+  cursor:pointer;
+  transform:translateZ(0);
+  transform-style:preserve-3d;
+  perspective:650px;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.06),transparent 15% 84%,rgba(24,12,7,.12)),
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,.035) 0 2px,
+      transparent 2px 18%,
+      rgba(45,25,15,.24) 18% 20%
+    ),
+    linear-gradient(145deg,#8a5837 0%,#704228 52%,#4d2c1c 100%);
+  box-shadow:
+    inset 0 0 0 5px #66503b,
+    inset 0 0 0 7px #2f2118,
+    inset 9px 11px 20px rgba(255,222,178,.1),
+    inset -10px -12px 22px rgba(33,18,11,.22),
+    0 5px 0 #332117,
+    0 11px 18px rgba(61,37,22,.22);
+  transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s ease,filter .25s ease;
+}
+.box::before{
+  content:"";
+  position:absolute;
+  z-index:1;
+  top:8px;
+  right:9px;
+  left:9px;
+  height:29%;
+  border-radius:7px 7px 3px 3px;
+  transform:none;
+  transition:none;
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse at center,#25170f 0 44%,#3d281b 72%,#1e120c 100%);
+  border:1px solid #24160e;
+  box-shadow:inset 0 8px 15px rgba(0,0,0,.45),0 1px rgba(255,225,184,.15);
+}
+.box:hover:not(.opened)::before,
+.box:focus-visible:not(.opened)::before{
+  transform:none;
+}
+.box::after{
+  content:"";
+  position:absolute;
+  z-index:3;
+  inset:7px;
+  border:1px solid rgba(146,117,80,.68);
+  border-radius:6px;
+  pointer-events:none;
+}
+.box:hover:not(.opened){
+  transform:translateY(-4px);
+  filter:saturate(1.03) brightness(1.025);
+  border-color:#2c180f;
+  box-shadow:
+    inset 0 0 0 5px #786047,
+    inset 0 0 0 7px #312117,
+    inset 9px 11px 20px rgba(255,224,180,.14),
+    inset -10px -12px 22px rgba(33,16,8,.22),
+    0 8px 0 #321c11,
+    0 18px 28px rgba(61,37,22,.25);
+}
+.box:focus-visible{
+  outline:4px solid rgba(199,154,74,.48);
+  outline-offset:3px;
+}
+.box-num{
+  position:absolute;
+  z-index:5;
+  top:45%;
+  right:50%;
+  transform:translateX(50%);
+  width:auto;
+  height:auto;
+  padding:2px 10px 4px;
+  border-radius:8px;
+  background:linear-gradient(145deg,#f3e7cf,#d8c29b);
+  border:1px solid #70502e;
+  color:#302219;
+  font-family:"Georgia","Times New Roman",serif;
+  font-size:clamp(22px,3.2vmin,42px);
+  font-weight:900;
+  line-height:1.05;
+  text-shadow:0 1px rgba(255,255,255,.55);
+  box-shadow:inset 0 1px #fff6dc,0 3px 7px rgba(44,25,14,.28);
+  transition:transform .25s ease;
+}
+.box:hover:not(.opened) .box-num{
+  animation:none;
+  transform:translateX(50%) scale(1.05);
+}
+.box-lid{
+  position:absolute;
+  z-index:7;
+  top:-3px;
+  right:-2px;
+  left:-2px;
+  height:34%;
+  border-radius:10px 10px 4px 4px;
+  border:2px solid #302016;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.08),transparent 20% 82%,rgba(30,16,10,.16)),
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,.035) 0 2px,
+      transparent 2px 46%,
+      rgba(47,26,16,.32) 47% 52%
+    ),
+    linear-gradient(145deg,#966140,#74452b 54%,#513020 100%);
+  box-shadow:
+    inset 0 0 0 4px #735a42,
+    inset 0 0 0 6px #2e2118,
+    inset 0 2px rgba(255,235,204,.16),
+    0 5px 0 #352218,
+    0 8px 10px rgba(41,24,15,.28);
+  transform-origin:50% 0;
+  transform:perspective(520px) rotateX(0deg) translateY(0);
+  transition:transform .5s cubic-bezier(.22,.8,.2,1),box-shadow .5s ease,filter .35s ease;
+  backface-visibility:hidden;
+  pointer-events:none;
+}
+.box-lid::after{
+  content:"";
+  position:absolute;
+  right:7%;
+  left:7%;
+  bottom:11%;
+  height:3px;
+  border-radius:4px;
+  background:linear-gradient(90deg,#3b291e,#8a6e50 25% 75%,#3b291e);
+  box-shadow:0 1px rgba(255,255,255,.13);
+}
+.box:hover:not(.opened) .box-lid,
+.box:focus-visible:not(.opened) .box-lid{
+  transform:perspective(520px) rotateX(-58deg) translateY(-4px);
+  filter:brightness(1.05);
+  box-shadow:
+    inset 0 0 0 4px #80664c,
+    inset 0 0 0 6px #2e2118,
+    0 10px 10px rgba(39,22,13,.25);
+}
+.crate-rivets{
+  position:absolute;
+  z-index:4;
+  inset:10px;
+  border-radius:5px;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 0 0,#9f8768 0 2px,#3d3025 2.5px 4px,transparent 4.5px),
+    radial-gradient(circle at 100% 0,#9f8768 0 2px,#3d3025 2.5px 4px,transparent 4.5px),
+    radial-gradient(circle at 0 100%,#9f8768 0 2px,#3d3025 2.5px 4px,transparent 4.5px),
+    radial-gradient(circle at 100% 100%,#9f8768 0 2px,#3d3025 2.5px 4px,transparent 4.5px);
+}
+.box.opened{
+  cursor:not-allowed;
+  border-color:#2e2018;
+  filter:saturate(.45);
+  background:
+    radial-gradient(ellipse at 50% 45%,#241912 0 36%,#49352a 37% 50%,#2a1c15 51% 100%);
+  box-shadow:inset 0 0 28px #130d09,0 4px 0 #2b1b12,0 8px 15px rgba(46,29,19,.18);
+  animation:boxOpen .65s ease-out;
+}
+.box.opened::before{
+  top:10px;
+  right:11px;
+  left:11px;
+  height:42%;
+  background:radial-gradient(ellipse,#1a110c,#3a281e 70%);
+  border-color:#6b4c37;
+  box-shadow:inset 0 0 22px #0d0805;
+}
+.box.opened::after{display:block;border-color:rgba(178,146,106,.24)}
+.box.opened .box-lid{
+  animation:lidOpen .65s cubic-bezier(.22,.8,.2,1) forwards;
+}
+.box.opened .box-num{
+  top:47%;
+  opacity:.52;
+  font-size:clamp(15px,1.6vmin,22px);
+  color:#d9c6ad;
+  background:rgba(42,29,21,.72);
+  border-color:#6f5340;
+  text-shadow:none;
+  box-shadow:none;
+}
+.opened-label{
+  position:absolute;
+  z-index:4;
+  inset:auto 8px 20%;
+  text-align:center;
+  color:#cab79e;
+  font-size:clamp(11px,1.15vw,16px);
+  font-weight:800;
+  letter-spacing:.03em;
+}
+@keyframes boxOpen{
+  0%{transform:translateY(0) scale(1)}
+  45%{transform:translateY(-3px) scale(1.035)}
+  100%{transform:translateY(0) scale(1)}
+}
+@keyframes lidOpen{
+  from{transform:perspective(520px) rotateX(0deg) translateY(0)}
+  to{transform:perspective(520px) rotateX(-78deg) translateY(-5px)}
+}
+
+.overlay{
+  background:rgba(31,22,17,.58);
+  backdrop-filter:blur(7px);
+}
+.modal{
+  color:var(--ink);
+  background:linear-gradient(145deg,#fffaf2,#eadcc9);
+  border:1px solid rgba(91,59,37,.25);
+  box-shadow:0 28px 70px rgba(34,22,15,.32),inset 0 1px #fff;
+}
+.modal h2{
+  color:var(--walnut-dark);
+  text-shadow:none;
+}
+.question-text,.settings-section{
+  color:var(--ink);
+  background:rgba(255,255,255,.54);
+  border-color:rgba(91,59,37,.16);
+}
+.question-text{font-weight:700}
+.tabs{border-bottom-color:rgba(91,59,37,.14)}
+.tab{color:#806a59}
+.tab.active{color:var(--walnut-dark);border-bottom-color:var(--brass)}
+.tab:hover{color:var(--ink)}
+.settings-section h3{color:var(--walnut-dark);border-bottom-color:rgba(91,59,37,.14)}
+.settings-section .hint,.box-edit label{color:#756151}
+.team-edit,.box-edit{
+  color:var(--ink);
+  background:rgba(255,255,255,.58);
+  border-color:rgba(91,59,37,.17);
+}
+.team-edit input[type=text],.team-edit .score-box,.box-edit input[type=text],.box-edit input[type=number],.box-edit textarea,.box-edit select{
+  color:var(--ink);
+  background:#fffaf3;
+  border-color:#cdbda9;
+}
+.team-edit .score-box input{color:var(--walnut-dark)}
+.team-edit .score-box button{color:var(--ink);background:#eadcc8}
+.team-edit .score-box button:hover{background:var(--brass);color:var(--ink)}
+.box-edit-header{border-bottom-color:rgba(91,59,37,.14)}
+.box-edit-header b{color:var(--walnut-dark)}
+.question-type-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-top:10px;
+  padding:10px;
+  border:1px solid #d5c3ad;
+  border-radius:10px;
+  background:#f2e7d8;
+}
+.question-type-label{
+  color:var(--walnut-dark);
+  font-size:12px;
+  font-weight:900;
+  line-height:1.5;
+}
+.question-type-label span{
+  display:block;
+  color:#786351;
+  font-weight:600;
+}
+.choice-settings{
+  margin-top:10px;
+  padding:11px;
+  border:1px solid #cdb99f;
+  border-radius:11px;
+  background:rgba(239,226,208,.72);
+}
+.choice-settings-title{
+  color:var(--walnut-dark);
+  font-size:12px;
+  font-weight:900;
+  margin-bottom:8px;
+}
+.choice-settings-note{
+  color:#786351;
+  font-size:11px;
+  margin-top:8px;
+  line-height:1.5;
+}
+.choice-setting{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  align-items:center;
+  gap:8px;
+  margin-top:7px;
+}
+.choice-radio{
+  display:flex!important;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  min-width:48px;
+  height:36px;
+  margin:0!important;
+  border:1px solid #bda88f;
+  border-radius:8px;
+  background:#fffaf3;
+  color:var(--walnut-dark)!important;
+  cursor:pointer;
+}
+.choice-radio input{
+  width:17px;
+  height:17px;
+  accent-color:var(--green);
+}
+.choice-setting input[type=text]{margin:0}
+.value-editor .sign-toggle{border-color:#cdbda9}
+.value-editor .sign-toggle button{background:#efe4d5;color:#695747}
+
+.box-count-control{
+  display:grid;
+  grid-template-columns:auto 110px auto 1fr;
+  align-items:center;
+  gap:10px;
+  margin:0 0 14px;
+  padding:13px 15px;
+  border-radius:12px;
+  background:#f2e7d8;
+  border:1px solid #d5c3ad;
+}
+.box-count-control label{font-weight:900;color:var(--walnut-dark)}
+.box-count-control input{
+  width:100%;
+  padding:9px 10px;
+  border-radius:9px;
+  border:1px solid #bda88f;
+  background:#fffaf3;
+  color:var(--ink);
+  font-size:16px;
+  font-weight:800;
+}
+.box-count-note{color:#786351;font-size:12px}
+.wrong-close-control{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:0 0 12px;
+  padding:13px 15px;
+  border:1px solid #d5c3ad;
+  border-radius:12px;
+  background:linear-gradient(145deg,#fff9ef,#eee0cc);
+  cursor:pointer;
+  box-shadow:inset 0 1px #fff;
+}
+.wrong-close-control input{
+  flex:0 0 auto;
+  width:22px;
+  height:22px;
+  accent-color:var(--green);
+  cursor:pointer;
+}
+.wrong-close-copy b{
+  display:block;
+  color:var(--walnut-dark);
+  font-size:14px;
+}
+.wrong-close-copy span{
+  display:block;
+  margin-top:3px;
+  color:#786351;
+  font-size:11px;
+  line-height:1.5;
+}
+
+.answer-reveal{background:linear-gradient(135deg,#3f745e,#275a47)}
+.quiz-choices{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:11px;
+  margin:0 0 18px;
+}
+.quiz-choice{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-height:58px;
+  padding:11px 13px;
+  border:1px solid #bda88f;
+  border-radius:12px;
+  background:linear-gradient(145deg,#fffaf3,#eadbc7);
+  color:var(--ink);
+  font-family:inherit;
+  font-size:16px;
+  font-weight:800;
+  text-align:right;
+  cursor:pointer;
+  box-shadow:0 5px 12px rgba(70,43,27,.1),inset 0 1px #fff;
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background .18s ease;
+}
+.quiz-choice:hover:not(:disabled){
+  transform:translateY(-2px);
+  border-color:var(--brass);
+  box-shadow:0 8px 16px rgba(70,43,27,.16),inset 0 1px #fff;
+}
+.quiz-choice:disabled{cursor:default}
+.quiz-choice-letter{
+  flex:0 0 auto;
+  width:31px;
+  height:31px;
+  display:grid;
+  place-items:center;
+  border-radius:9px;
+  background:#dfc79f;
+  color:var(--walnut-dark);
+  border:1px solid #b18a51;
+  font-size:14px;
+}
+.quiz-choice.choice-correct{
+  color:#fff;
+  border-color:#285844;
+  background:linear-gradient(135deg,#4d806b,#2d5c4b);
+}
+.quiz-choice.choice-wrong{
+  color:#fff;
+  border-color:#74382f;
+  background:linear-gradient(135deg,#a75d51,#7f3f36);
+}
+.quiz-choice.choice-correct .quiz-choice-letter,
+.quiz-choice.choice-wrong .quiz-choice-letter{
+  color:#fff;
+  background:rgba(255,255,255,.16);
+  border-color:rgba(255,255,255,.36);
+}
+.choice-help{
+  width:100%;
+  color:#756151;
+  font-size:13px;
+  font-weight:800;
+  text-align:center;
+}
+.reveal-value.positive{background:linear-gradient(135deg,#4d806b,#2d5c4b)}
+.reveal-value.negative{background:linear-gradient(135deg,#a75d51,#7f3f36)}
+.reveal-target{color:var(--walnut-dark)}
+
+@media (max-width:1100px){
+  body{overflow:auto}
+  .top{grid-template-columns:1fr auto}
+  .brand{grid-column:1/2}
+  .teams{grid-column:1/-1;grid-row:2}
+  .center-panel{grid-column:2;grid-row:1}
+  .grid{
+    height:auto;
+    overflow:visible;
+    align-content:start;
+    justify-content:stretch;
+    grid-template-columns:repeat(var(--grid-cols),minmax(0,1fr));
+    grid-template-rows:none;
+    grid-auto-rows:auto;
+  }
+}
+@media (max-width:760px){
+  body{padding:10px;gap:10px}
+  .top{grid-template-columns:1fr auto;gap:10px}
+  .brand{min-width:0;padding:10px 12px}
+  .brand h1{font-size:23px}
+  .teams{grid-template-columns:1fr 1fr}
+  .team{padding:9px;column-gap:7px}
+  .team-score{font-size:24px}
+  .grid{
+    width:100%;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    grid-template-rows:none!important;
+    grid-auto-rows:auto!important;
+    justify-content:stretch;
+    align-content:start;
+    gap:8px;
+    padding:8px;
+    border-radius:18px;
+  }
+  .box-count-control{grid-template-columns:1fr 90px;gap:8px}
+  .box-count-control .btn,.box-count-note{grid-column:1/-1}
+  .quiz-choices{grid-template-columns:1fr}
+  .question-type-row{align-items:stretch;flex-direction:column}
+  .settings-grid{grid-template-columns:1fr}
+  .team-edit{grid-template-columns:1fr 1fr}
+  .team-edit .te-label{grid-column:1/-1}
+}
+@media (max-width:440px){
+  .grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  .center-panel{grid-template-columns:repeat(3,40px)}
+  .center-panel .btn{width:40px;height:40px}
+  .teams{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}
+}
+
+/* ===== Projector readability upgrade ===== */
+#qModal .modal{
+  max-width:min(96vw,1000px)!important;
+  width:min(96vw,1000px)!important;
+  padding:34px 34px 28px!important;
+}
+#qModal .modal h2{
+  font-size:clamp(30px,2.6vw,44px)!important;
+  font-weight:900!important;
+  line-height:1.25!important;
+  margin-bottom:18px!important;
+}
+#qModal .question-text{
+  font-family:"Tahoma","Arial","Segoe UI",sans-serif!important;
+  font-size:clamp(34px,3vw,48px)!important;
+  line-height:1.6!important;
+  font-weight:900!important;
+  padding:34px 38px!important;
+  margin-bottom:24px!important;
+  border-radius:18px!important;
+}
+#qModal .modal-actions .btn,
+#qModal .choice-help,
+#qModal .quiz-choice{
+  font-size:clamp(20px,1.8vw,28px)!important;
+}
+#qModal .modal-actions .btn{
+  min-width:220px!important;
+  padding:16px 24px!important;
+  font-weight:900!important;
+}
+#qModal .quiz-choice{
+  min-height:74px!important;
+  padding:16px 18px!important;
+  font-weight:900!important;
+}
+#qModal .quiz-choice-letter{
+  width:40px!important;
+  height:40px!important;
+  font-size:18px!important;
+}
+
+
+/* ===== Arabic letter-dot clarity for projector ===== */
+#qModal .question-text{
+  font-family:"Arial","Tahoma","Segoe UI",sans-serif!important;
+  font-size:clamp(38px,3.35vw,54px)!important;
+  line-height:1.72!important;
+  font-weight:700!important;
+  letter-spacing:.01em!important;
+  text-rendering:optimizeLegibility!important;
+  -webkit-font-smoothing:antialiased!important;
+}
+#qModal .modal h2{
+  font-family:"Arial","Tahoma","Segoe UI",sans-serif!important;
+  font-weight:700!important;
+}
+#qModal .quiz-choice{
+  font-family:"Arial","Tahoma","Segoe UI",sans-serif!important;
+  font-size:clamp(23px,2vw,31px)!important;
+  font-weight:700!important;
+  line-height:1.55!important;
+}
+#qModal .quiz-choice-letter{
+  width:58px!important;
+  height:58px!important;
+  border-radius:14px!important;
+  font-family:"Arial","Tahoma","Segoe UI",sans-serif!important;
+  font-size:30px!important;
+  font-weight:700!important;
+}
+
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="brand">
+    <span class="brand-kicker">لعبة جماعية</span>
+    <h1>تحدّي الصناديق</h1>
+    <span class="brand-meta" id="gameMeta">30 صندوقاً جاهزاً</span>
+  </div>
+  <div class="teams" id="teamsBar"></div>
+  <div class="center-panel">
+    <button class="btn gold gear" onclick="openSettings()" title="الإعدادات" aria-label="فتح الإعدادات"><span class="gear-icon">⚙</span> الإعدادات</button>
+    <button class="btn" onclick="resetGame()" title="إعادة ضبط اللعبة" aria-label="إعادة ضبط اللعبة">إعادة ضبط</button>
+    <button class="btn" onclick="toggleFullscreen()" title="ملء الشاشة" aria-label="ملء الشاشة">ملء الشاشة</button>
+  </div>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<!-- Question Modal -->
+<div class="overlay" id="qModal">
+  <div class="modal" id="qModalInner">
+    <h2 id="qTitle">السؤال</h2>
+    <div class="question-text" id="qText"></div>
+    <div id="qAnswerBox"></div>
+    <div class="modal-actions" id="qActions"></div>
+  </div>
+</div>
+
+<!-- Reveal Modal -->
+<div class="overlay" id="revealModal">
+  <div class="modal">
+    <h2>💎 القيمة المخفية 💎</h2>
+    <div class="reveal-target" id="revealTarget"></div>
+    <div class="reveal-value" id="revealValue"></div>
+    <div class="modal-actions"><button class="btn gold" onclick="finishReveal()">موافق ✨</button></div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="overlay" id="settingsModal">
+  <div class="modal" style="max-width:1050px">
+    <h2>⚙ الإعدادات</h2>
+    <div class="tabs">
+      <button class="tab active" data-tab="teams" onclick="switchTab('teams')">👥 الفرق والنقاط</button>
+      <button class="tab" data-tab="boxes" onclick="switchTab('boxes')">📦 الصناديق والأسئلة</button>
+      <button class="tab" data-tab="reset" onclick="switchTab('reset')">🔄 إعادة الضبط</button>
+    </div>
+
+    <div class="tab-content active" id="tab-teams">
+      <div class="settings-section">
+        <h3>👥 إدارة الفرق</h3>
+        <p class="hint">عدّل اسم الفريق ونقاطه مباشرة، أو استخدم أزرار + و − لإضافة/خصم نقاط.</p>
+        <div id="teamsEdit"></div>
+        <button class="btn success small" onclick="addTeam()" style="margin-top:10px">+ إضافة فريق</button>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-boxes">
+      <div class="settings-section">
+        <h3 id="boxesHeading">الصناديق والأسئلة</h3>
+        <p class="hint">اختر عدد الصناديق، ثم خصّص السؤال والإجابة والنقاط لكل صندوق.</p>
+        <label class="wrong-close-control" for="closeOnWrongInput">
+          <input id="closeOnWrongInput" type="checkbox">
+          <span class="wrong-close-copy">
+            <b>هل تريد إغلاق الصناديق عند الإجابة الخاطئة؟</b>
+            <span>عند تفعيل الخيار، يُحسب الصندوق مستخدماً ويظهر عليه «تم فتحه» بعد الإجابة الخاطئة.</span>
+          </span>
+        </label>
+        <div class="box-count-control">
+          <label for="boxCountInput">عدد الصناديق</label>
+          <input id="boxCountInput" type="number" min="1" max="50" step="1" value="30">
+          <button class="btn small" type="button" onclick="applyBoxCount()">تطبيق العدد</button>
+          <span class="box-count-note">يمكنك الاختيار من صندوق واحد حتى 50 صندوقاً.</span>
+        </div>
+        <div class="settings-grid" id="boxesEdit"></div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-reset">
+      <div class="settings-section">
+        <h3>🔄 إعادة الضبط</h3>
+        <p class="hint">سيتم تصفير جميع النقاط وإغلاق جميع الصناديق وإعادة ترتيب الأسئلة عشوائياً.</p>
+        <button class="btn danger" onclick="resetGame()">🔄 إعادة ضبط كاملة</button>
+      </div>
+    </div>
+
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn success" onclick="saveSettings()">💾 حفظ</button>
+      <button class="btn danger" onclick="closeSettings()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<div class="fx-layer" id="fxLayer"></div>
+
+<script>
+const TEAM_COLORS=[
+  {c:'#ffd166',g:'rgba(255,209,102,.6)',e:'👑'},
+  {c:'#06d6a0',g:'rgba(6,214,160,.6)',e:'🐉'},
+  {c:'#ef476f',g:'rgba(239,71,111,.6)',e:'🦁'},
+  {c:'#4cc9f0',g:'rgba(76,201,240,.6)',e:'🦅'},
+  {c:'#b388ff',g:'rgba(179,136,255,.6)',e:'🐺'},
+  {c:'#ff9d00',g:'rgba(255,157,0,.6)',e:'🔥'},
+];
+const DEFAULT_BOX_COUNT=30;
+const MAX_BOXES=50;
+const DEFAULT_VALUES=[2000,-2000,1000,1000,-1000,-1000,1,-1,500,500,500,500,300,300,300,200,200,200,100,100,100,50,50,50,-500,-500,-300,-200,-100,-50];
+const MAX_PROGRESS=5000;
+
+const DEFAULT_QA=[
+  ["في أي سورة ورد قوله تعالى: ﴿وَلَقَدْ مَكَّنَّاهُمْ فِيمَا إِن مَّكَّنَّاكُمْ فِيهِ﴾؟", "سورة الأحقاف"],
+  ["أكمل: ﴿أَمْ حَسِبَ الَّذِينَ فِي قُلُوبِهِم مَرَضٌ أَنْ لَنْ يُخْرِجَ اللَّهُ ______﴾.", "أضغانهم"],
+  ["أكمل الكلمة الناقصة: ﴿وَلَتَعْرِفَنَّهُمْ فِي ______ الْقَوْلِ﴾.", "لحن"],
+  ["أكمل: ﴿فَكَشَفْنَا عَنْكَ غِطَاءَكَ فَبَصَرُكَ الْيَوْمَ ______﴾.", "حديد"],
+  ["أكمل: ﴿الَّذِينَ يَجْتَنِبُونَ كَبَائِرَ الْإِثْمِ وَالْفَوَاحِشَ إِلَّا ______﴾.", "اللمم"],
+  ["ما السورة التي وردت فيها آية كاملة مكوّنة من كلمة واحدة: ﴿مُدْهَامَّتَانِ﴾؟", "سورة الرحمن"],
+  ["أكمل: ﴿لَوْ أَنْزَلْنَا هَذَا الْقُرْآنَ عَلَى جَبَلٍ لَرَأَيْتَهُ خَاشِعًا ______ مِنْ خَشْيَةِ اللَّهِ﴾.", "متصدعًا"],
+  ["في أي سورة ورد قوله تعالى: ﴿قَدْ سَمِعَ اللَّهُ قَوْلَ الَّتِي تُجَادِلُكَ فِي زَوْجِهَا وَتَشْتَكِي إِلَى اللَّهِ﴾؟", "سورة المجادلة"],
+  ["أكمل قوله تعالى: ﴿كُلَّمَا أُلْقِيَ فِيهَا فَوْجٌ...﴾ إلى نهاية الآية.", "سألهم خزنتها ألم يأتكم نذير"],
+  ["في سورة المزمل، أكمل: ﴿وَكَانَتِ الْجِبَالُ...﴾.", "كثيبًا مهيلاً"],
+  ["ما اسم الغار الذي كان النبي ﷺ يتعبد فيه عندما نزل عليه الوحي أول مرة؟", "غار حراء"],
+  ["ما أول كلمة قالها جبريل عليه السلام للنبي ﷺ عند بداية نزول الوحي؟", "اقرأ"],
+  ["على كم ركن بُني الإسلام؟", "خمسة أركان"],
+  ["أي ركن من أركان الإسلام يعني إخراج جزء من المال للمستحقين؟", "الزكاة"],
+  ["إلى أي مسجد يتجه المسلمون في صلاتهم؟", "المسجد الحرام (الكعبة المشرفة)"],
+  ["أي ركن من أركان الإسلام يكون بالذهاب إلى مكة وأداء المناسك؟", "الحج"],
+  ["ما أكبر كوكب في النظام الشمسي؟", "المشتري"],
+  ["ما الكوكب الذي يُعرف باسم الكوكب الأحمر؟", "المريخ"],
+  ["ما أقرب كوكب إلى الشمس؟", "عطارد"],
+  ["ما أسرع حيوان بري في العالم؟", "الفهد الصياد"],
+  ["ما أكبر حيوان معروف على الأرض؟", "الحوت الأزرق"],
+  ["ماذا تسمى العملية التي يتحول فيها الماء السائل إلى بخار ماء؟", "التبخر"],
+  ["ما العضو في جسم الإنسان الذي يعمل مثل المضخة ويدفع الدم إلى أنحاء الجسم؟", "القلب"],
+  ["ما المحيط الذي تبلغ مساحته حدًا يسمح بأن تتسع داخله قارات العالم مجتمعة؟", "المحيط الهادئ"],
+  ["دخلت غرفة مظلمة وفيها شمعة وموقد، ومعك عود ثقاب جديد. ما أول شيء تشعله؟", "عود الثقاب"],
+  ["ما الشيء الذي كلما زاد نقص؟", "العمر"],
+  ["رجل لديه 4 بنات، ولكل البنات أخ واحد فقط. كم عدد أبناء الرجل جميعًا؟", "5 أبناء: أربع بنات وولد واحد"],
+  ["ما الشيء الذي كلما أخذت منه أصبح أكبر؟", "الحفرة"],
+  ["أنا عدد، إذا ضربتني في 2 ثم أضفت 2 أصبح الناتج 10. فما أنا؟", "4"],
+  ["أنت في سباق، وتجاوزت المتسابق الذي كان في المركز الثاني. في أي مركز أصبحت؟", "المركز الثاني"]
+];
+
+let state={
+  teams:[{name:"الفريق 1",score:0},{name:"الفريق 2",score:0}],
+  current:0,
+  boxCount:DEFAULT_BOX_COUNT,
+  closeOnWrong:false,
+  boxes:[]
+};
+let pendingChoice=null;
+let currentBoxIdx=null;
+let choiceLocked=false;
+
+function shuffle(arr){
+  const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function clampBoxCount(value){
+  return Math.max(1,Math.min(MAX_BOXES,parseInt(value,10)||DEFAULT_BOX_COUNT));
+}
+
+function makeBox(i,questions,values=DEFAULT_VALUES){
+  const qa=questions[i%questions.length];
+  return {
+    question:qa[0],
+    answer:qa[1],
+    questionType:'manual',
+    choices:['','','',''],
+    correctIndex:0,
+    value:values[i%values.length],
+    opened:false
+  };
+}
+
+function normalizeBoxQuestion(box){
+  if(!box)return box;
+  box.questionType=box.questionType==='choices'?'choices':'manual';
+  if(!Array.isArray(box.choices))box.choices=[];
+  box.choices=box.choices.slice(0,4).map(choice=>String(choice??''));
+  while(box.choices.length<4)box.choices.push('');
+  box.correctIndex=Math.max(0,Math.min(3,parseInt(box.correctIndex,10)||0));
+  if(box.questionType==='choices'&&box.choices[box.correctIndex].trim()){
+    box.answer=box.choices[box.correctIndex];
+  }
+  if('closedWrong' in box)delete box.closedWrong;
+  return box;
+}
+
+function hasCompleteChoices(box){
+  normalizeBoxQuestion(box);
+  return box.questionType==='choices'&&box.choices.every(choice=>choice.trim().length>0);
+}
+
+function initBoxes(count=state.boxCount||DEFAULT_BOX_COUNT){
+  count=clampBoxCount(count);
+  const qs=shuffle(DEFAULT_QA);
+  const vals=shuffle(DEFAULT_VALUES);
+  state.boxCount=count;
+  state.boxes=[];
+  for(let i=0;i<count;i++){
+    state.boxes.push(makeBox(i,qs,vals));
+  }
+}
+
+function resizeBoxes(count){
+  count=clampBoxCount(count);
+  if(!Array.isArray(state.boxes))state.boxes=[];
+  if(count<state.boxes.length){
+    state.boxes=state.boxes.slice(0,count);
+  }else if(count>state.boxes.length){
+    const qs=shuffle(DEFAULT_QA);
+    const vals=shuffle(DEFAULT_VALUES);
+    for(let i=state.boxes.length;i<count;i++)state.boxes.push(makeBox(i,qs,vals));
+  }
+  state.boxCount=count;
+  state.boxes.forEach(normalizeBoxQuestion);
+}
+
+function load(){
+  try{
+    const s=localStorage.getItem('quizGameCustom30V1');
+    if(s){
+      state=JSON.parse(s);
+      state.closeOnWrong=Boolean(state.closeOnWrong);
+      state.boxCount=clampBoxCount(state.boxCount||(state.boxes&&state.boxes.length)||DEFAULT_BOX_COUNT);
+      if(!Array.isArray(state.boxes)||!state.boxes.length)initBoxes(state.boxCount);
+      else resizeBoxes(state.boxCount);
+    } else{
+      state.closeOnWrong=false;
+      initBoxes();
+    }
+  }catch(e){
+    state.closeOnWrong=false;
+    initBoxes();
+  }
+}
+function save(){localStorage.setItem('quizGameCustom30V1',JSON.stringify(state))}
+
+function renderTeams(){
+  const bar=document.getElementById('teamsBar');
+  bar.innerHTML='';
+  state.teams.forEach((t,i)=>{
+    const tc=TEAM_COLORS[i%TEAM_COLORS.length];
+    const d=document.createElement('div');
+    d.className='team'+(i===state.current?' active':'');
+    d.style.setProperty('--tc',tc.c);
+    d.style.setProperty('--tg',tc.g);
+    d.id='team-'+i;
+    const pct=Math.max(0,Math.min(100,(t.score/MAX_PROGRESS)*100));
+    d.innerHTML=`<div class="team-emoji">${tc.e}</div>
+      <div class="team-name">${escapeHtml(t.name)}</div>
+      <div class="team-score" id="score-${i}">${t.score}</div>
+      <div class="progress-ring"><div style="width:${pct}%"></div></div>`;
+    bar.appendChild(d);
+  });
+}
+function renderGrid(){
+  const g=document.getElementById('grid');
+  g.innerHTML='';
+  const count=state.boxes.length;
+  const cols=count<=12?4:count<=20?5:count<=30?6:count<=40?8:10;
+  const rows=Math.ceil(count/cols);
+  g.style.setProperty('--grid-cols',cols);
+  g.style.setProperty('--grid-rows',rows);
+  const remaining=state.boxes.filter(b=>!b.opened).length;
+  const meta=document.getElementById('gameMeta');
+  if(meta)meta.textContent=`${count} صندوقاً • ${remaining} متبقية`;
+  state.boxes.forEach((b,i)=>{
+    normalizeBoxQuestion(b);
+    const d=document.createElement('div');
+    d.className='box'+(b.opened?' opened':'');
+    d.id='box-'+i;
+    d.setAttribute('role','button');
+    d.setAttribute('aria-label',b.opened?`الصندوق ${i+1} مفتوح`:`فتح الصندوق ${i+1}`);
+    d.setAttribute('aria-disabled',b.opened?'true':'false');
+    d.tabIndex=b.opened?-1:0;
+    d.innerHTML=b.opened
+      ? `<span class="box-lid"></span><div class="box-num">${i+1}</div><span class="opened-label">تم فتحه</span>`
+      : `<span class="box-lid"></span><span class="crate-rivets"></span><div class="box-num">${i+1}</div>`;
+    if(!b.opened){
+      d.onclick=()=>openBox(i);
+      d.onkeydown=e=>{
+        if(e.key==='Enter'||e.key===' '){
+          e.preventDefault();
+          openBox(i);
+        }
+      };
+    }
+    g.appendChild(d);
+  });
+  requestAnimationFrame(sizeVaultGrid);
+}
+function render(){renderTeams();renderGrid();save()}
+
+function sizeVaultGrid(){
+  const g=document.getElementById('grid');
+  if(!g)return;
+  if(window.innerWidth<=1100){
+    g.style.removeProperty('--tile-size');
+    return;
+  }
+
+  const styles=getComputedStyle(g);
+  const cols=parseInt(styles.getPropertyValue('--grid-cols'),10)||6;
+  const rows=parseInt(styles.getPropertyValue('--grid-rows'),10)||5;
+  const gapX=parseFloat(styles.columnGap)||0;
+  const gapY=parseFloat(styles.rowGap)||0;
+  const padX=(parseFloat(styles.paddingLeft)||0)+(parseFloat(styles.paddingRight)||0);
+  const padY=(parseFloat(styles.paddingTop)||0)+(parseFloat(styles.paddingBottom)||0);
+  const usableWidth=g.clientWidth-padX-(gapX*(cols-1));
+  const usableHeight=g.clientHeight-padY-(gapY*(rows-1));
+  const tile=Math.floor(Math.min(usableWidth/cols,usableHeight/rows));
+
+  if(Number.isFinite(tile)&&tile>0){
+    g.style.setProperty('--tile-size',`${tile}px`);
+  }
+}
+
+function nextTurn(){state.current=(state.current+1)%state.teams.length}
+
+function openBox(i){
+  if(state.boxes[i].opened)return;
+  currentBoxIdx=i;
+  const b=state.boxes[i];
+  choiceLocked=false;
+  const modal=document.getElementById('qModalInner');
+  modal.classList.remove('exiting-wrong');
+  document.getElementById('qTitle').textContent=`الصندوق ${i+1} — ${state.teams[state.current].name}`;
+  document.getElementById('qText').textContent=b.question;
+  const answerBox=document.getElementById('qAnswerBox');
+  const actions=document.getElementById('qActions');
+  if(hasCompleteChoices(b)){
+    const letters=['أ','ب','ج','د'];
+    answerBox.innerHTML=`<div class="quiz-choices">${
+      b.choices.map((choice,index)=>`
+        <button type="button" class="quiz-choice" data-game-choice="${index}" onclick="selectQuizChoice(${index})">
+          <span class="quiz-choice-letter">${letters[index]}</span>
+          <span>${escapeHtml(choice)}</span>
+        </button>`).join('')
+    }</div>`;
+    actions.innerHTML='<div class="choice-help">اختر إجابة واحدة من الخيارات الأربعة</div>';
+  }else{
+    answerBox.innerHTML='';
+    actions.innerHTML=`
+      <button class="btn success" onclick="answerCorrect()">✅ إجابة صحيحة</button>
+      <button class="btn danger" onclick="answerWrong()">❌ إجابة خاطئة</button>`;
+  }
+  document.getElementById('qModal').classList.add('show');
+}
+
+function selectQuizChoice(choiceIndex){
+  if(choiceLocked)return;
+  const b=state.boxes[currentBoxIdx];
+  if(!hasCompleteChoices(b))return;
+  choiceLocked=true;
+
+  const buttons=[...document.querySelectorAll('[data-game-choice]')];
+  buttons.forEach(button=>{button.disabled=true});
+  const isCorrect=choiceIndex===b.correctIndex;
+  const selected=buttons[choiceIndex];
+  if(selected)selected.classList.add(isCorrect?'choice-correct':'choice-wrong');
+  const revealCorrect=!isCorrect&&Boolean(state.closeOnWrong);
+  if(revealCorrect&&buttons[b.correctIndex]){
+    buttons[b.correctIndex].classList.add('choice-correct');
+  }
+  const feedback=isCorrect
+    ? 'إجابة صحيحة'
+    : revealCorrect
+      ? `الإجابة الصحيحة: <b>${escapeHtml(b.choices[b.correctIndex])}</b>`
+      : 'إجابة غير صحيحة';
+  document.getElementById('qActions').innerHTML=`<div class="choice-help">${feedback}</div>`;
+  setTimeout(()=>{isCorrect?answerCorrect():answerWrong()},isCorrect?650:(revealCorrect?1500:300));
+}
+
+function answerCorrect(){
+  flashBg('green');
+  showBigIcon('✅','correct');
+  burstCoins();
+  const b=state.boxes[currentBoxIdx];
+  document.getElementById('qAnswerBox').innerHTML=`<div class="answer-reveal">${escapeHtml(b.answer)}</div>`;
+  document.getElementById('qActions').innerHTML='';
+  setTimeout(()=>{
+    const otherTeams=state.teams.map((t,idx)=>({t,idx})).filter(x=>x.idx!==state.current);
+    document.getElementById('qActions').innerHTML=`
+      <button class="btn success" onclick="chooseKeep()">💰 شيل (لنفسي)</button>
+      ${otherTeams.length>0?`<button class="btn gold" onclick="showGiftOptions()">🎁 ودي (لفريق آخر)</button>`:''}
+      <div id="giftZone" style="width:100%"></div>`;
+  },800);
+}
+
+/* A wrong multiple-choice answer reveals the correct choice only when the box will be consumed. */
+function answerWrong(){
+  const wrongBoxIdx=currentBoxIdx;
+  const shouldCloseBox=Boolean(state.closeOnWrong);
+  flashBg('red');
+  showBigIcon('❌','wrong');
+  shatterShards();
+  const modal=document.getElementById('qModalInner');
+  modal.classList.add('exiting-wrong');
+  // wobble the box on the board to signal failure
+  const boxEl=document.getElementById('box-'+currentBoxIdx);
+  if(boxEl){
+    setTimeout(()=>{
+      boxEl.classList.add('wrong-wobble');
+      setTimeout(()=>boxEl.classList.remove('wrong-wobble'),900);
+    },700);
+  }
+  setTimeout(()=>{
+    closeQModal();
+    modal.classList.remove('exiting-wrong');
+    if(shouldCloseBox&&state.boxes[wrongBoxIdx]){
+      state.boxes[wrongBoxIdx].opened=true;
+      if('closedWrong' in state.boxes[wrongBoxIdx])delete state.boxes[wrongBoxIdx].closedWrong;
+    }
+    nextTurn();
+    render();
+    save();
+  },900);
+}
+
+function showGiftOptions(){
+  const otherTeams=state.teams.map((t,idx)=>({t,idx})).filter(x=>x.idx!==state.current);
+  document.getElementById('giftZone').innerHTML=`
+    <div style="margin-top:14px;color:#ffd166;font-size:15px;text-align:center;font-weight:bold">🎁 اختر الفريق المستلم:</div>
+    <div class="gift-buttons">`+
+    otherTeams.map(x=>{
+      const tc=TEAM_COLORS[x.idx%TEAM_COLORS.length];
+      return `<button class="btn" style="background:linear-gradient(135deg,${tc.c},${tc.c}cc);color:#000;box-shadow:0 4px 14px ${tc.g}" onclick="chooseGift(${x.idx})">${tc.e} ${escapeHtml(x.t.name)}</button>`;
+    }).join('')+`</div>`;
+}
+function chooseKeep(){
+  const b=state.boxes[currentBoxIdx];
+  pendingChoice={value:b.value,targetIdx:state.current,boxIdx:currentBoxIdx,fromIdx:state.current};
+  showReveal();
+}
+function chooseGift(idx){
+  const b=state.boxes[currentBoxIdx];
+  pendingChoice={value:b.value,targetIdx:idx,boxIdx:currentBoxIdx,fromIdx:state.current};
+  showReveal();
+}
+function showReveal(){
+  closeQModal();
+  const {value,targetIdx}=pendingChoice;
+  const valEl=document.getElementById('revealValue');
+  valEl.textContent=(value>0?'+':'')+value;
+  valEl.className='reveal-value '+(value>0?'positive':'negative');
+  document.getElementById('revealTarget').textContent=`النقاط ستذهب إلى: ${state.teams[targetIdx].name}`;
+  document.getElementById('revealModal').classList.add('show');
+}
+function finishReveal(){
+  const {value,targetIdx,boxIdx,fromIdx}=pendingChoice;
+  document.getElementById('revealModal').classList.remove('show');
+  setTimeout(()=>{
+    flyCoinsTo(fromIdx,targetIdx,value);
+    setTimeout(()=>{
+      const oldScore=state.teams[targetIdx].score;
+      const newScore=oldScore+value;
+      animateScore(targetIdx,oldScore,newScore);
+      state.teams[targetIdx].score=newScore;
+      const targetEl=document.getElementById('team-'+targetIdx);
+      if(targetEl){targetEl.classList.add('glow-gold');setTimeout(()=>targetEl.classList.remove('glow-gold'),900)}
+      if(value<0){
+        const fromEl=document.getElementById('team-'+fromIdx);
+        if(fromEl){fromEl.classList.add('shake');setTimeout(()=>fromEl.classList.remove('shake'),700)}
+      }
+      // Correct answer => box disappears (opened)
+      state.boxes[boxIdx].opened=true;
+      if('closedWrong' in state.boxes[boxIdx])delete state.boxes[boxIdx].closedWrong;
+      pendingChoice=null;
+      nextTurn();
+      setTimeout(()=>render(),900);
+      save();
+    },700);
+  },150);
+}
+function animateScore(teamIdx,from,to){
+  const el=document.getElementById('score-'+teamIdx);
+  if(!el)return;
+  el.classList.add('bump');
+  const dur=800,start=performance.now(),diff=to-from;
+  function step(t){
+    const p=Math.min(1,(t-start)/dur);
+    const eased=1-Math.pow(1-p,3);
+    el.textContent=Math.round(from+diff*eased);
+    if(p<1)requestAnimationFrame(step);
+    else setTimeout(()=>el.classList.remove('bump'),200);
+  }
+  requestAnimationFrame(step);
+}
+function closeQModal(){document.getElementById('qModal').classList.remove('show')}
+
+function flashBg(color){
+  const f=document.createElement('div');
+  f.className='flash '+color;
+  document.body.appendChild(f);
+  setTimeout(()=>f.remove(),1000);
+}
+function showBigIcon(text,cls){
+  const el=document.createElement('div');
+  el.className='big-icon '+cls;
+  el.textContent=text;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1300);
+}
+function shatterShards(){
+  const fx=document.getElementById('fxLayer');
+  const cx=window.innerWidth/2,cy=window.innerHeight/2;
+  for(let i=0;i<14;i++){
+    const s=document.createElement('div');
+    s.className='shard';
+    const angle=(Math.PI*2*i)/14+Math.random()*.5;
+    const dist=200+Math.random()*250;
+    s.style.left=(cx-30)+'px';s.style.top=(cy-30)+'px';
+    s.style.setProperty('--dx',Math.cos(angle)*dist+'px');
+    s.style.setProperty('--dy',Math.sin(angle)*dist+'px');
+    s.style.setProperty('--rot',(Math.random()*720-360)+'deg');
+    s.style.animationDelay=(i*25)+'ms';
+    fx.appendChild(s);
+    setTimeout(()=>s.remove(),1200);
+  }
+}
+function burstCoins(){
+  const emojis=['💰','🪙','💵','✨','🌟'];
+  const fx=document.getElementById('fxLayer');
+  const cx=window.innerWidth/2,cy=window.innerHeight/2;
+  for(let i=0;i<18;i++){
+    const c=document.createElement('div');
+    c.className='coin burst';
+    c.textContent=emojis[i%emojis.length];
+    const angle=(Math.PI*2*i)/18+Math.random()*.4;
+    const dist=180+Math.random()*180;
+    c.style.left=cx+'px';c.style.top=cy+'px';
+    c.style.setProperty('--dx',Math.cos(angle)*dist+'px');
+    c.style.setProperty('--dy',Math.sin(angle)*dist+'px');
+    c.style.setProperty('--rot',(Math.random()*720-360)+'deg');
+    c.style.animationDelay=(i*30)+'ms';
+    fx.appendChild(c);
+    setTimeout(()=>c.remove(),1100);
+  }
+}
+function flyCoinsTo(fromIdx,toIdx,value){
+  const target=document.getElementById('team-'+toIdx);
+  if(!target)return;
+  const tr=target.getBoundingClientRect();
+  const tx=tr.left+tr.width/2,ty=tr.top+tr.height/2;
+  let sx,sy;
+  if(fromIdx===toIdx){sx=window.innerWidth/2;sy=window.innerHeight/2}
+  else{
+    const from=document.getElementById('team-'+fromIdx);
+    if(from){const fr=from.getBoundingClientRect();sx=fr.left+fr.width/2;sy=fr.top+fr.height/2}
+    else{sx=window.innerWidth/2;sy=window.innerHeight/2}
+  }
+  const emoji=value>0?['💰','🪙','💵']:['💸','❄️','💔'];
+  for(let i=0;i<12;i++){
+    const c=document.createElement('div');
+    c.className='fly-coin';
+    c.textContent=emoji[i%emoji.length];
+    c.style.left=(sx+(Math.random()*40-20))+'px';
+    c.style.top=(sy+(Math.random()*40-20))+'px';
+    c.style.setProperty('--tx',(tx-sx)+'px');
+    c.style.setProperty('--ty',(ty-sy)+'px');
+    c.style.animationDelay=(i*50)+'ms';
+    document.getElementById('fxLayer').appendChild(c);
+    setTimeout(()=>c.remove(),1500);
+  }
+}
+
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.toggle('active',c.id==='tab-'+name));
+}
+function openSettings(){renderSettings();document.getElementById('settingsModal').classList.add('show')}
+function closeSettings(){document.getElementById('settingsModal').classList.remove('show')}
+
+function renderSettings(){
+  const countInput=document.getElementById('boxCountInput');
+  if(countInput)countInput.value=state.boxes.length;
+  const closeOnWrongInput=document.getElementById('closeOnWrongInput');
+  if(closeOnWrongInput)closeOnWrongInput.checked=Boolean(state.closeOnWrong);
+  const boxesHeading=document.getElementById('boxesHeading');
+  if(boxesHeading)boxesHeading.textContent=`الصناديق والأسئلة (${state.boxes.length})`;
+
+  const te=document.getElementById('teamsEdit');
+  te.innerHTML='';
+  state.teams.forEach((t,i)=>{
+    const tc=TEAM_COLORS[i%TEAM_COLORS.length];
+    const row=document.createElement('div');
+    row.className='team-edit';
+    row.style.setProperty('--tc',tc.c);
+    row.innerHTML=`
+      <span class="te-label">${tc.e} فريق ${i+1}</span>
+      <input type="text" data-team="${i}" value="${escapeAttr(t.name)}" placeholder="اسم الفريق">
+      <div class="score-box">
+        <button type="button" onclick="adjustTeamScore(${i},-100)" title="-100">−</button>
+        <input type="number" data-score="${i}" value="${t.score}" step="100">
+        <button type="button" onclick="adjustTeamScore(${i},100)" title="+100">+</button>
+      </div>
+      <button class="btn small" type="button" onclick="adjustTeamScore(${i},-500)" title="خصم 500">−500</button>
+      <button class="btn success small" type="button" onclick="adjustTeamScore(${i},500)" title="إضافة 500">+500</button>
+      ${state.teams.length>2?`<button class="btn danger small" type="button" onclick="removeTeam(${i})">حذف</button>`:'<span></span>'}
+    `;
+    te.appendChild(row);
+  });
+
+  const be=document.getElementById('boxesEdit');
+  be.innerHTML='';
+  state.boxes.forEach((b,i)=>{
+    normalizeBoxQuestion(b);
+    const d=document.createElement('div');
+    d.className='box-edit';
+    const sign=b.value>=0?'add':'sub';
+    const absVal=Math.abs(b.value);
+    const usesChoices=b.questionType==='choices';
+    const choiceLetters=['أ','ب','ج','د'];
+    const choiceRows=b.choices.map((choice,choiceIndex)=>`
+      <div class="choice-setting">
+        <label class="choice-radio" title="تحديد هذا الخيار كإجابة صحيحة">
+          <input type="radio" name="correct-choice-${i}" data-correct="${i}" value="${choiceIndex}" ${b.correctIndex===choiceIndex?'checked':''}>
+          <span>${choiceLetters[choiceIndex]}</span>
+        </label>
+        <input type="text" data-choice-box="${i}" data-choice-index="${choiceIndex}" value="${escapeAttr(choice)}" placeholder="الخيار ${choiceIndex+1}">
+      </div>`).join('');
+    d.innerHTML=`
+      <div class="box-edit-header">
+        <b>صندوق ${i+1}</b>
+        <label style="font-size:12px;color:#aaa;font-weight:normal">
+          <input type="checkbox" data-opened="${i}" ${b.opened?'checked':''}> مفتوح
+        </label>
+      </div>
+      <label>السؤال</label>
+      <textarea data-q="${i}">${escapeHtml(b.question)}</textarea>
+      <div class="question-type-row">
+        <div class="question-type-label">
+          ${usesChoices?'سؤال من أربعة خيارات':'سؤال بإجابة يدوية'}
+          <span>${usesChoices?'حدّد الدائرة بجانب الإجابة الصحيحة':'يمكن للحكم تحديد صحة الإجابة أثناء اللعب'}</span>
+        </div>
+        <button type="button" class="btn ${usesChoices?'danger':'success'} small" onclick="toggleQuestionChoices(${i})" aria-expanded="${usesChoices}">
+          ${usesChoices?'إلغاء الخيارات':'إضافة 4 خيارات'}
+        </button>
+      </div>
+      ${usesChoices
+        ? `<div class="choice-settings">
+            <div class="choice-settings-title">الخيارات الأربعة</div>
+            ${choiceRows}
+            <div class="choice-settings-note">اختر الدائرة الموجودة بجانب الإجابة الصحيحة.</div>
+          </div>`
+        : `<label>الإجابة الصحيحة</label>
+           <input type="text" data-a="${i}" value="${escapeAttr(b.answer)}">`}
+      <label>النقاط</label>
+      <div class="value-editor">
+        <input type="number" data-vabs="${i}" value="${absVal}" min="0" step="100" placeholder="مثلاً 1000">
+        <div class="sign-toggle" data-sign-group="${i}">
+          <button type="button" data-sign="add" class="${sign==='add'?'active add':''}" onclick="setSign(${i},'add')">+ إضافة</button>
+          <button type="button" data-sign="sub" class="${sign==='sub'?'active sub':''}" onclick="setSign(${i},'sub')">− خصم</button>
+        </div>
+      </div>`;
+    be.appendChild(d);
+  });
+}
+
+function toggleQuestionChoices(i){
+  const settingsPanel=document.querySelector('#settingsModal .modal');
+  const previousScroll=settingsPanel?settingsPanel.scrollTop:0;
+  collectCurrentEdits();
+  const box=state.boxes[i];
+  if(!box)return;
+  normalizeBoxQuestion(box);
+  if(box.questionType==='choices'){
+    box.questionType='manual';
+  }else{
+    box.questionType='choices';
+    if(!box.choices.some(choice=>choice.trim())){
+      box.choices=[box.answer||'','','',''];
+      box.correctIndex=0;
+    }
+  }
+  renderSettings();
+  requestAnimationFrame(()=>{
+    const panel=document.querySelector('#settingsModal .modal');
+    if(panel)panel.scrollTop=previousScroll;
+  });
+}
+
+function applyBoxCount(){
+  collectCurrentEdits();
+  const input=document.getElementById('boxCountInput');
+  const count=clampBoxCount(input?input.value:state.boxes.length);
+  resizeBoxes(count);
+  renderSettings();
+}
+
+function adjustTeamScore(i,delta){
+  const inp=document.querySelector(`[data-score="${i}"]`);
+  const cur=parseInt(inp.value,10)||0;
+  inp.value=cur+delta;
+}
+function setSign(i,sign){
+  const group=document.querySelector(`[data-sign-group="${i}"]`);
+  group.querySelectorAll('button').forEach(btn=>{
+    const s=btn.dataset.sign;
+    btn.classList.toggle('active',s===sign);
+    btn.classList.toggle('add',s==='add'&&s===sign);
+    btn.classList.toggle('sub',s==='sub'&&s===sign);
+    if(s!==sign){btn.classList.remove('add','sub')}
+  });
+}
+function getSign(i){
+  const active=document.querySelector(`[data-sign-group="${i}"] button.active`);
+  return active?active.dataset.sign:'add';
+}
+
+function addTeam(){
+  collectCurrentEdits();
+  state.teams.push({name:'فريق '+(state.teams.length+1),score:0});
+  renderSettings();
+}
+function removeTeam(i){
+  if(state.teams.length<=2)return;
+  collectCurrentEdits();
+  state.teams.splice(i,1);
+  if(state.current>=state.teams.length)state.current=0;
+  renderSettings();
+}
+function collectCurrentEdits(){
+  const closeOnWrongInput=document.getElementById('closeOnWrongInput');
+  if(closeOnWrongInput)state.closeOnWrong=closeOnWrongInput.checked;
+  document.querySelectorAll('[data-team]').forEach(el=>{const i=+el.dataset.team;if(state.teams[i])state.teams[i].name=el.value||('فريق '+(i+1))});
+  document.querySelectorAll('[data-score]').forEach(el=>{const i=+el.dataset.score;if(state.teams[i])state.teams[i].score=parseInt(el.value,10)||0});
+  document.querySelectorAll('[data-q]').forEach(el=>{const i=+el.dataset.q;if(state.boxes[i])state.boxes[i].question=el.value});
+  document.querySelectorAll('[data-a]').forEach(el=>{const i=+el.dataset.a;if(state.boxes[i])state.boxes[i].answer=el.value});
+  state.boxes.forEach((box,i)=>{
+    normalizeBoxQuestion(box);
+    const choiceInputs=[...document.querySelectorAll(`[data-choice-box="${i}"]`)];
+    if(choiceInputs.length!==4)return;
+    choiceInputs.sort((a,b)=>(+a.dataset.choiceIndex)-(+b.dataset.choiceIndex));
+    box.questionType='choices';
+    box.choices=choiceInputs.map(input=>input.value.trim());
+    const selected=document.querySelector(`[data-correct="${i}"]:checked`);
+    box.correctIndex=selected?Math.max(0,Math.min(3,parseInt(selected.value,10)||0)):0;
+    if(box.choices[box.correctIndex])box.answer=box.choices[box.correctIndex];
+  });
+  document.querySelectorAll('[data-vabs]').forEach(el=>{
+    const i=+el.dataset.vabs;
+    if(!state.boxes[i])return;
+    const abs=Math.abs(parseInt(el.value,10)||0);
+    const sign=getSign(i);
+    state.boxes[i].value=sign==='sub'?-abs:abs;
+  });
+  document.querySelectorAll('[data-opened]').forEach(el=>{
+    const i=+el.dataset.opened;
+    if(!state.boxes[i])return;
+    state.boxes[i].opened=el.checked;
+    if('closedWrong' in state.boxes[i])delete state.boxes[i].closedWrong;
+  });
+}
+function saveSettings(){
+  collectCurrentEdits();
+  const countInput=document.getElementById('boxCountInput');
+  if(countInput)resizeBoxes(clampBoxCount(countInput.value));
+  closeSettings();render();
+}
+function resetGame(){
+  if(!confirm('هل تريد إعادة ضبط اللعبة؟ سيتم تصفير النقاط وإعادة ترتيب الأسئلة عشوائياً.'))return;
+  state.teams.forEach(t=>{t.score=0});
+  initBoxes(state.boxCount);
+  state.current=0;
+  closeSettings();render();
+}
+function toggleFullscreen(){
+  if(!document.fullscreenElement)document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+}
+function escapeHtml(s){return String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))}
+function escapeAttr(s){return String(s).replace(/[&"<]/g,c=>({"&":"&amp;",'"':"&quot;","<":"&lt;"}[c]))}
+
+window.addEventListener('resize',()=>requestAnimationFrame(sizeVaultGrid));
+load();render();
+</script>
+</body>
+</html>
