@@ -1103,9 +1103,7 @@ body::after{
 }
 
 
-/* ===== Shared save across devices ===== */
-.sync-status{margin-top:4px;color:#4f6a58;font-size:11px;font-weight:700}
-.sync-status.warn{color:var(--red)}
+/* ===== Save failure notice ===== */
 .sync-toast{
   position:fixed;z-index:300;bottom:22px;left:50%;transform:translate(-50%,20px);
   max-width:90vw;padding:12px 20px;border-radius:12px;background:var(--walnut-dark);color:#fffaf2;
@@ -1122,7 +1120,6 @@ body::after{
     <span class="brand-kicker">لعبة جماعية</span>
     <h1>تحدّي الصناديق</h1>
     <span class="brand-meta" id="gameMeta">30 صندوقاً جاهزاً</span>
-    <span class="sync-status" id="syncStatus" role="status">جارٍ تحميل آخر نسخة…</span>
   </div>
   <div class="teams" id="teamsBar"></div>
   <div class="center-panel">
@@ -1267,32 +1264,29 @@ let state={
   closeOnWrong:false,
   boxes:[]
 };
-const SYNC={owner:'marwanbnf',repo:'khazain-quiz',branch:'game-data',file:'state.json'};
-const CACHE_KEY='khazainQuiz.cacheV2';
-const API_URL=`https://api.github.com/repos/${SYNC.owner}/${SYNC.repo}/contents/${SYNC.file}?ref=${SYNC.branch}`;
-const RAW_URL=`https://raw.githubusercontent.com/${SYNC.owner}/${SYNC.repo}/${SYNC.branch}/${SYNC.file}`;
-const KEY_STORAGE='khazainQuiz.saveKey';
-let remoteSha=null;
-let lastSyncedJson=null;
+const STORAGE_KEY='khazainQuiz.state';
 let settingsSnapshot=null;
-let lastRefresh=0;
-let loadFailed=false;
-let saveKey=null;
-let saveKeyInvalid=false;
-let syncTimer=null;
-let syncBusy=false;
-let syncAgain=false;
 let pendingChoice=null;
 let currentBoxIdx=null;
 let choiceLocked=false;
 
-function shuffle(arr){
+function shuffle(arr,random=Math.random){
   const a=arr.slice();
   for(let i=a.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
+    const j=Math.floor(random()*(i+1));
     [a[i],a[j]]=[a[j],a[i]];
   }
   return a;
+}
+
+/* Gives every device the same starting board until its own edits are saved. */
+function seededRandom(seed){
+  return ()=>{
+    seed=(seed+0x6D2B79F5)|0;
+    let t=Math.imul(seed^(seed>>>15),1|seed);
+    t=(t+Math.imul(t^(t>>>7),61|t))^t;
+    return ((t^(t>>>14))>>>0)/4294967296;
+  };
 }
 
 function clampBoxCount(value){
@@ -1333,8 +1327,8 @@ function hasCompleteChoices(box){
 
 function initBoxes(count=state.boxCount||DEFAULT_BOX_COUNT){
   count=clampBoxCount(count);
-  const qs=shuffle(DEFAULT_QA);
-  const vals=shuffle(DEFAULT_VALUES);
+  const qs=shuffle(DEFAULT_QA,seededRandom(1));
+  const vals=shuffle(DEFAULT_VALUES,seededRandom(2));
   state.boxCount=count;
   state.boxes=[];
   for(let i=0;i<count;i++){
@@ -1356,7 +1350,7 @@ function resizeBoxes(count){
   state.boxes.forEach(normalizeBoxQuestion);
 }
 
-/* The published state on the game-data branch is the source of truth for every device. */
+/* Each device keeps its own copy: nothing saved here reaches any other device. */
 function adoptState(obj){
   state=obj&&typeof obj==='object'?obj:{};
   if(!Array.isArray(state.teams)||state.teams.length<1)state.teams=[{name:"الفريق 1",score:0},{name:"الفريق 2",score:0}];
@@ -1367,57 +1361,20 @@ function adoptState(obj){
   resizeBoxes(state.boxCount);
 }
 
-function writeCache(){
-  try{localStorage.setItem(CACHE_KEY,JSON.stringify({baseSha:remoteSha,state}))}catch(e){}
-}
-function readCache(){
-  try{return JSON.parse(localStorage.getItem(CACHE_KEY))}catch(e){return null}
+function load(){
+  let saved=null;
+  try{saved=JSON.parse(localStorage.getItem(STORAGE_KEY))}catch(e){}
+  adoptState(saved);
 }
 
-/* The API is always current but rate limited; the raw file has no such limit but may lag a few minutes. */
-async function fetchRemote(){
-  const options={cache:'no-store',signal:AbortSignal.timeout(10000)};
+function save(){
   try{
-    const headers={Accept:'application/vnd.github+json'};
-    if(saveKey&&!saveKeyInvalid)headers.Authorization='Bearer '+saveKey;
-    const res=await fetch(`${API_URL}&t=${Date.now()}`,{...options,headers});
-    if(!res.ok)throw new Error('GitHub read failed: '+res.status);
-    const data=await res.json();
-    const bytes=Uint8Array.from(atob(data.content.replace(/\s/g,'')),c=>c.charCodeAt(0));
-    return {sha:data.sha,text:new TextDecoder().decode(bytes)};
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
   }catch(e){
-    const res=await fetch(RAW_URL,options);
-    if(!res.ok)throw new Error('GitHub raw read failed: '+res.status);
-    return {sha:null,text:await res.text()};
+    showToast('تعذّر الحفظ على هذا الجهاز.');
   }
 }
 
-/* The presenter's link carries the save key after #, which browsers never send to any server. */
-function captureSaveKey(){
-  const match=location.hash.match(/^#k=([\w-]+)$/);
-  if(match){
-    saveKey=match[1];
-    try{localStorage.setItem(KEY_STORAGE,saveKey)}catch(e){}
-    history.replaceState(null,'',location.pathname+location.search);
-    return;
-  }
-  try{saveKey=localStorage.getItem(KEY_STORAGE)}catch(e){}
-}
-
-function setSyncStatus(kind){
-  const el=document.getElementById('syncStatus');
-  if(!el)return;
-  const labels={
-    synced:'☁ محفوظ',
-    saving:'جارٍ الحفظ…',
-    error:'⚠ تعذّر الحفظ، ستُعاد المحاولة تلقائياً',
-    viewOnly:'👁 رابط للعرض: التغييرات تبقى على هذا الجهاز فقط',
-    keyInvalid:'⚠ رابط الحفظ منتهٍ: اطلب رابطاً جديداً من صاحب المسابقة',
-    offline:'⚠ تعذّر جلب آخر نسخة، وهذه آخر نسخة على هذا الجهاز'
-  };
-  el.textContent=labels[kind];
-  el.classList.toggle('warn',kind!=='synced'&&kind!=='saving');
-}
 function showToast(message){
   const el=document.getElementById('syncToast');
   el.textContent=message;
@@ -1426,124 +1383,13 @@ function showToast(message){
   showToast.timer=setTimeout(()=>el.classList.remove('show'),4500);
 }
 
-function applyRemote(remote){
-  adoptState(JSON.parse(remote.text));
-  remoteSha=remote.sha;
-  lastSyncedJson=JSON.stringify(state);
-}
-
-async function load(){
-  const cached=readCache();
+/* Removes what the earlier shared-save version left in this browser, including any save key. */
+function clearLegacyData(){
   try{
-    const remote=await fetchRemote();
-    applyRemote(remote);
-    // Unpublished changes on this device survive only while they are based on the latest published version.
-    if(remote.sha&&cached&&cached.baseSha===remote.sha&&cached.state)adoptState(cached.state);
-  }catch(e){
-    loadFailed=true;
-    adoptState(cached&&cached.state);
-    if(cached)remoteSha=cached.baseSha;
-  }
-}
-
-function hasUnsaved(){return JSON.stringify(state)!==lastSyncedJson}
-
-function save(){
-  writeCache();
-  if(!hasUnsaved()){
-    if(!syncBusy)setSyncStatus('synced');
-    return;
-  }
-  if(saveKeyInvalid){
-    setSyncStatus('keyInvalid');
-    return;
-  }
-  if(!saveKey){
-    setSyncStatus(loadFailed?'offline':'viewOnly');
-    return;
-  }
-  setSyncStatus('saving');
-  clearTimeout(syncTimer);
-  syncTimer=setTimeout(pushState,700);
-}
-
-async function pushState(){
-  clearTimeout(syncTimer);
-  if(settingsSnapshot!==null){
-    syncTimer=setTimeout(pushState,2000);
-    return;
-  }
-  if(syncBusy){
-    syncAgain=true;
-    return;
-  }
-  if(!saveKey||saveKeyInvalid)return;
-  const json=JSON.stringify(state);
-  if(json===lastSyncedJson){
-    setSyncStatus('synced');
-    return;
-  }
-  syncBusy=true;
-  setSyncStatus('saving');
-  try{
-    const bytes=new TextEncoder().encode(JSON.stringify(state,null,2));
-    const body={message:'حفظ بيانات المسابقة',branch:SYNC.branch,content:btoa(Array.from(bytes,b=>String.fromCharCode(b)).join(''))};
-    if(remoteSha)body.sha=remoteSha;
-    const res=await fetch(API_URL.split('?')[0],{
-      method:'PUT',
-      headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+saveKey,'Content-Type':'application/json'},
-      body:JSON.stringify(body),
-      signal:AbortSignal.timeout(15000)
-    });
-    if(res.ok){
-      const data=await res.json();
-      remoteSha=data.content.sha;
-      lastSyncedJson=json;
-      loadFailed=false;
-      writeCache();
-      setSyncStatus('synced');
-    }else if(res.status===409||res.status===422){
-      // Another device saved first: its newer edits must not be overwritten by this older copy.
-      const remote=await fetchRemote();
-      applyRemote(remote);
-      loadFailed=false;
-      render();
-      showToast('تم تحديث المسابقة من جهاز آخر، فأعد آخر تعديل إن لزم.');
-    }else if(res.status===401||res.status===403||res.status===404){
-      saveKeyInvalid=true;
-      setSyncStatus('keyInvalid');
-    }else{
-      throw new Error('GitHub write failed: '+res.status);
-    }
-  }catch(e){
-    setSyncStatus('error');
-    syncTimer=setTimeout(pushState,15000);
-  }
-  syncBusy=false;
-  if(syncAgain){
-    syncAgain=false;
-    pushState();
-  }
-}
-
-/* Picks up saves from another device, without interrupting an open dialog or an unsaved change. */
-async function refreshFromRemote(force=false){
-  const now=Date.now();
-  if(!force&&now-lastRefresh<30000)return;
-  const busy=()=>document.querySelector('.overlay.show')||pendingChoice||syncBusy;
-  if(busy()||(!force&&hasUnsaved()&&!loadFailed))return;
-  lastRefresh=now;
-  try{
-    const remote=await fetchRemote();
-    if(busy()||!remote.sha)return;
-    loadFailed=false;
-    if(remote.sha===remoteSha&&lastSyncedJson!==null){
-      save();
-      return;
-    }
-    applyRemote(remote);
-    render();
+    localStorage.removeItem('khazainQuiz.saveKey');
+    localStorage.removeItem('khazainQuiz.cacheV2');
   }catch(e){}
+  if(location.hash.startsWith('#k='))history.replaceState(null,'',location.pathname+location.search);
 }
 
 function renderTeams(){
@@ -1879,8 +1725,7 @@ function switchTab(name){
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));
   document.querySelectorAll('.tab-content').forEach(c=>c.classList.toggle('active',c.id==='tab-'+name));
 }
-async function openSettings(){
-  await refreshFromRemote(true);
+function openSettings(){
   settingsSnapshot=JSON.stringify(state);
   renderSettings();
   document.getElementById('settingsModal').classList.add('show');
@@ -2081,7 +1926,6 @@ function saveSettings(){
   settingsSnapshot=null;
   closeSettings();
   render();
-  if(saveKey&&!saveKeyInvalid&&hasUnsaved())pushState();
 }
 function resetGame(){
   if(!confirm('هل تريد إعادة ضبط اللعبة؟ سيتم تصفير النقاط وإعادة ترتيب الأسئلة عشوائياً.'))return;
@@ -2103,10 +1947,9 @@ function escapeHtml(s){return String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&
 function escapeAttr(s){return String(s).replace(/[&"<]/g,c=>({"&":"&amp;",'"':"&quot;","<":"&lt;"}[c]))}
 
 window.addEventListener('resize',()=>requestAnimationFrame(sizeVaultGrid));
-window.addEventListener('focus',()=>refreshFromRemote());
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshFromRemote()});
-captureSaveKey();
-load().then(render);
+clearLegacyData();
+load();
+render();
 </script>
 </body>
 </html>
